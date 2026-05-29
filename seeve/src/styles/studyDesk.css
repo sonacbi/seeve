@@ -1,0 +1,58 @@
+/* professor */
+#ProfessorPageInfo{
+    margin-bottom: 15px;
+    color: #666;
+}
+
+#ProfessorViewer{
+    border: 1px solid black;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.pSlot {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+/* note */
+.noteSlot {
+  margin-bottom: 20px;
+}
+
+/* slot 공통 양식 */
+.slot {
+    width: var(--slot-width);
+    height: var(--slot-height);
+    border: 1px solid gray;
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    background: var(--slot--bg);
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.slot.disabled {
+    opacity: 0.2;
+    cursor: default;
+}
+
+.slot.active {
+    background: #ddd;
+}
+
+
+/* noteEditor */
+#NoteEditor{
+    width: 100%;
+    height: 60%;
+}

@@ -1,4 +1,5 @@
 import StudyDeskPage from "./pages/StudyDeskPage";
+import "./styles/studyDesk.css";
 
 function App() {
 

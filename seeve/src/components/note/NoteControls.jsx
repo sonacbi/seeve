@@ -15,6 +15,7 @@ function NoteControls({
 const {
     addPage,
     deleteCurrentPage,
+    resetCurrentPage,
     goPrev,
     goNext,
 } = useStudyDesk({
@@ -32,31 +33,24 @@ const {
     return (
         <>
             
-            <button
-            onClick={() =>
-                addPage(
-                currentNote.lecturePage
-                )
-            }
-            >
-            메모 추가 (+)
+            <button onClick={() => addPage( currentNote.lecturePage ) } >
+                메모 추가 (+)
             </button>
 
-            <button
-            onClick={
-                deleteCurrentPage
-            }
-            style={{
-                marginLeft: 10,
+            <button onClick={ deleteCurrentPage }
+            style={{ marginLeft: 10,
             }}
             >
-            현재 페이지 삭제
+                현재 페이지 삭제
+            </button>
+
+            <button onClick={ resetCurrentPage }
+            style = {{ marginLeft: 10, }}>
+                현재 페이지 초기화
             </button>
 
             <h3
-            style={{
-                marginTop: 20,
-            }}
+            style={{ marginTop: 20, }}
             >
             {currentNote.id}
             </h3>

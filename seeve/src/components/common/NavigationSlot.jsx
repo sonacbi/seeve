@@ -1,40 +1,27 @@
 function NavigationSlot({
     children,
     onClick,
+    style,
     active = false,
     disabled = false,
     width = 60,
     height = 60,
     background = "white",
 }) {
+    // slot 활성화, 비활성화 여부
+        const className = `
+        slot
+        ${active ? "active" : ""}
+        ${disabled ? "disabled" : ""}
+    `;
+
     return (
         <div
             onClick={
                 disabled ? undefined : onClick
             }
-            style={{
-                width,
-                height,
-
-                border: "1px solid gray",
-                borderRadius: 12,
-
-                display: "flex",
-                flexDirection: "column",
-
-                justifyContent: "center",
-                alignItems: "center",
-
-                cursor: disabled
-                    ? "default"
-                    : "pointer",
-
-                opacity: disabled ? 0.2 : 1,
-
-                background: active
-                    ? "#ddd"
-                    : background,
-            }}
+            className={className}
+            style={style}
         >
             {children}
         </div>

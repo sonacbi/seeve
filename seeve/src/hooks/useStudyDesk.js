@@ -100,6 +100,30 @@ function useStudyDesk({
     );
   };
 
+  // -----------------------
+  // 초기화
+  // -----------------------
+  const resetCurrentPage = () => {
+    const lecturePage =
+      currentNote.lecturePage;
+
+    setNotePages((prev) => {
+      const updated = { ...prev };
+
+      updated[lecturePage] =
+        updated[lecturePage].map((page) =>
+          page.id === currentNote.id
+            ? {
+                ...page,
+                content: "",
+              }
+            : page
+        );
+
+      return updated;
+    });
+  };
+
 
 
   // -----------------------
@@ -127,6 +151,7 @@ function useStudyDesk({
         moveToNote,
         addPage,
         deleteCurrentPage,
+        resetCurrentPage,
         goPrev,
         goNext,
         // professorSlots,

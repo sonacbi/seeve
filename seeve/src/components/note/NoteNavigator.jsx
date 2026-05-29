@@ -20,12 +20,7 @@ const {
     return (
         <>
             {/* 슬롯 UI */}
-            <div
-            style={{
-                display: "flex",
-                gap: 10,
-                marginBottom: 20,
-            }}
+            <div className="pSlot noteSlot" // 하단 버튼과 간격 미세 조정 noteSlot
             >
                 {[...Array(MAX_NOTE_PAGE)].map(
                     (_, index) => {
@@ -37,8 +32,10 @@ const {
                     return (
                         <NavigationSlot
                             key={index}
-                            width={60}
-                            height={60}
+                            style={{
+                                "--slot-width": "60px",
+                                "--slot-height": "60px",
+                            }}
                             disabled={!page}
                             active={
                                 page?.id ===

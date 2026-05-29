@@ -4,11 +4,8 @@ function ProfessorPageInfo({
 }) {
     return (
         <>
-            <div
-                style={{
-                marginBottom: 15,
-                color: "#666",
-                }}
+            <div id="ProfessorPageInfo"
+                
             >
                 현재 {currentLectureIndex} /{" "}
                 {lectureCount}

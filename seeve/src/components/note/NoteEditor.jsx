@@ -30,16 +30,13 @@ function NoteEditor({
     return (
         <>
             <textarea
+            id = "NoteEditor"
             value={currentNote.content}
             onChange={(e) =>
                 updateContent(
                 e.target.value
                 )
             }
-            style={{
-                width: "100%",
-                height: "60%",
-            }}
             />
         </>
     );

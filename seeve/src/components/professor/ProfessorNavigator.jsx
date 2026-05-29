@@ -23,13 +23,7 @@ const {
     return (
         <>
             {/* 교수 페이지 슬롯 */}
-                <div
-                    style={{
-                    display: "flex",
-                    gap: 10,
-                    marginBottom: 20,
-                    }}
-                >
+                <div className="pSlot" >
                     {professorSlots.map(
                         (slot, index) => {
 
@@ -42,11 +36,13 @@ const {
 
                             return (
                                 <NavigationSlot
+                                    style={{
+                                        "--slot-width": "90px",
+                                        "--slot-height": "90px",
+                                        "--slot--bg": background,
+                                    }}
                                     key={index}
-                                    width={90}
-                                    height={90}
                                     disabled={!slot}
-                                    background={background}
                                     onClick={() =>
                                         moveProfessorPage(
                                             slot.lecturePage
