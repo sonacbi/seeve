@@ -150,6 +150,7 @@ function StudyDeskPage() {
                     currentNoteId={currentNoteId}
                     mode={mode} // 롤백 제어용
                     rollback={rollback}
+                    isDark={isDark} setIsDark={setIsDark}
                 />
 
                 </div>
@@ -178,6 +179,7 @@ function StudyDeskPage() {
                     currentLectureNotes={currentLectureNotes}
                     MAX_NOTE_PAGE={MAX_NOTE_PAGE}
                     rollback={rollback} mode={mode}
+                    isDark={isDark} setIsDark={setIsDark}
                     />
                     
                 </div>

@@ -57,6 +57,10 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
 }
+
+.icon path {
+  fill: var(--icon-color) !important;
+}
 /* wrap */
 #wrapper{
     display: block;

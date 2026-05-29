@@ -72,7 +72,7 @@ function LogoSVG() {
                 </path>
             </svg>
 
-            <span>seeve</span>
+            {/* <span>seeve</span> */}
         </div>
     );
 }

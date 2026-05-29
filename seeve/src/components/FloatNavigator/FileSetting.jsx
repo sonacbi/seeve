@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import FileList from "./FileList";
+import { ReactComponent as Flame } from "../../icon/flame.svg";
 
 function FileSetting({
     isOpen,
@@ -24,6 +25,7 @@ function FileSetting({
         <div id="fileSetting">
 
             <div id="saveName">
+                <Flame style={{ width : "15px"}} />
                 강의 자료 학습
             </div>
 
