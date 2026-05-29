@@ -1,0 +1,212 @@
+#floatNavigator{
+    position:relative;
+    z-index: 990;
+    width:100vw;
+    display:flex;
+    align-items:center;
+    gap:20px;
+    padding:10px 20px;
+
+    background:rgba(255,255,255,0.4);
+    backdrop-filter:blur(20px);
+
+    box-shadow:
+    0 10px 40px rgba(0,0,0,.1);
+
+    z-index:999;
+}
+
+#logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    font-weight:700;
+}
+
+/* =========================
+   File Setting
+========================= */
+
+#fileSetting{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:8px 14px;
+
+    border-radius:14px;
+
+    transition:.2s;
+}
+
+#fileSetting:hover{
+    background:rgba(255,255,255,.5);
+}
+
+#saveName{
+    font-size:15px;
+    font-weight:600;
+    color:#222;
+}
+
+#openFilePop{
+    border:none;
+    background:transparent;
+    cursor:pointer;
+
+    font-size:14px;
+
+    transition:.2s;
+}
+
+#openFilePop:hover{
+    transform:translateY(1px);
+    opacity:.7;
+}
+
+/* =========================
+   File List Popup
+========================= */
+/* =========================
+   File List Popup
+========================= */
+
+#fileList{
+    position:absolute;
+    z-index:999;
+
+    top:100%;
+    left:0;
+
+    margin-top:10px;
+
+    width:260px;
+
+    background:white;
+
+    border-radius:12px;
+
+    padding:12px;
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,.15);
+
+    display:flex;
+    flex-direction:column;
+
+    /* 애니메이션 */
+    transform-origin:top;
+}
+#fileList.open{
+    animation:
+    fileListOpen .18s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+#fileList.close{
+    animation:
+    fileListClose .14s cubic-bezier(.4,0,1,1) forwards;
+}
+
+/* 열릴 때 */
+@keyframes fileListOpen{
+    from{
+        opacity:0;
+        transform:translateY(-8px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* 닫힐 때 */
+@keyframes fileListClose{
+    from{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+    to{
+        opacity:0;
+        transform:translateY(-8px);
+    }
+}
+
+/* 공통 아이템 스타일 */
+#fileList > button,
+#fileList li{
+    display:flex;
+    align-items:center;
+    
+    width:100%;
+    
+    padding:12px 14px;
+
+    border:none;
+    border-radius:4px;
+    
+    background:none;
+
+    font-size:14px;
+    font-weight:500;
+
+    text-align:left;
+
+    cursor:pointer;
+    
+    transition:
+    background .2s,
+    transform .2s,
+    color .2s;
+}
+/* PDF 가져오기만 구분선 */
+#fileList > button{
+    margin-bottom:8px;
+    border-bottom:
+    1px solid #e5e5e5;
+}
+
+/* hover 통일 */
+#fileList > button:hover,
+#fileList li:hover{
+    background:#f5f7fb;
+    transform:translateX(3px);
+}
+
+/* 파일 목록 */
+#fileList ol{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+/* 파일 아이템 */
+#fileList li{
+    padding:10px 12px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+    font-size:14px;
+}
+
+#fileList li:hover{
+    background:#f5f7fb;
+    transform:translateX(3px);
+}
+
+/* 공통 버튼 */
+.navButton{
+    border:none;
+    background:transparent;
+
+    font-size:20px;
+
+    cursor:pointer;
+}

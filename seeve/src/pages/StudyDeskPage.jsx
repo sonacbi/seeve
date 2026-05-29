@@ -3,6 +3,7 @@ import { useState } from "react";
 import ProfessorPanel from "../components/professor/ProfessorPanel";
 import NotePanel from "../components/note/NotePanel"
 import useRollback from "../hooks/useRollback";
+import FloatNavigator from "../components/FloatNavigator/FloatNavigator";
 
 function StudyDeskPage() {
     // 챕터표기용 가안
@@ -111,68 +112,76 @@ function StudyDeskPage() {
         mode.isReset ||
         mode.isSort;
 
+    const [isDark, setIsDark] = useState(false); // 테스트용 코드
+    const background = !isDark ? "lightgray" : "#1a1a1a";
+
     return (
-        <div
-        style={{
-            display: "flex",
-            height: "100vh",
-        }}
-        >
-        {/* 교수 자료 */}
-        <div
-            style={{
-            position: "relative",
-            width : "50%",
-            flex: 1,
-            borderRight:
-                "1px solid lightgray",
-            padding: 20,
-            }}
-        >
-        <ProfessorPanel
-            professorOrder={ professorOrder } setProfessorOrder={ setProfessorOrder } // 리오더용
-            currentLectureIndex={currentLectureIndex}
-            lectureCount={lectureCount}
-            setNotePages={setNotePages}
-            currentNote={currentNote}
-            notePages={notePages}
-            flattenedNotes={flattenedNotes}
-            // setCurrentNoteIndex={setCurrentNoteIndex}
-            setCurrentNoteId={setCurrentNoteId}
-            currentNoteId={currentNoteId}
-            mode={mode} // 롤백 제어용
-            rollback={rollback}
-        />
 
-        </div>
-
-        {/* 학습 노트 */}
-        <div
-            style={{
-            flex: 1,
-            padding: 20,
-            position: "relative",
-            width : "50%",
-            }}
+        <div id="wrapper"
+        style={{ "--wrapper-background" : background }}
         >
-
-            <NotePanel
-            currentLectureIndex={currentLectureIndex}
-            lectureCount={lectureCount}
-            currentNote={currentNote}
-            setNotePages={setNotePages}
-            notePages={notePages}
-            flattenedNotes={flattenedNotes}
-            // setCurrentNoteIndex={setCurrentNoteIndex}
-            // currentNoteIndex={currentNoteIndex}
-            setCurrentNoteId={setCurrentNoteId}
-            currentNoteId={currentNoteId}
-            currentLectureNotes={currentLectureNotes}
-            MAX_NOTE_PAGE={MAX_NOTE_PAGE}
-            rollback={rollback} mode={mode}
+            <FloatNavigator
+                isDark={isDark}
+                setIsDark={setIsDark}
             />
-            
-        </div>
+
+            <div id="flexWrap">
+                {/* 교수 자료 */}
+                <div
+                    style={{
+                    position: "relative",
+                    width : "50%",
+                    flex: 1,
+                    borderRight:
+                        "1px solid black",
+                        padding: 20,
+                    }}
+                >
+                <ProfessorPanel
+                    professorOrder={ professorOrder } setProfessorOrder={ setProfessorOrder } // 리오더용
+                    currentLectureIndex={currentLectureIndex}
+                    lectureCount={lectureCount}
+                    setNotePages={setNotePages}
+                    currentNote={currentNote}
+                    notePages={notePages}
+                    flattenedNotes={flattenedNotes}
+                    // setCurrentNoteIndex={setCurrentNoteIndex}
+                    setCurrentNoteId={setCurrentNoteId}
+                    currentNoteId={currentNoteId}
+                    mode={mode} // 롤백 제어용
+                    rollback={rollback}
+                />
+
+                </div>
+
+                {/* 학습 노트 */}
+                <div
+                    style={{
+                    flex: 1,
+                    padding: 20,
+                    position: "relative",
+                    width : "50%",
+                    }}
+                >
+
+                    <NotePanel
+                    currentLectureIndex={currentLectureIndex}
+                    lectureCount={lectureCount}
+                    currentNote={currentNote}
+                    setNotePages={setNotePages}
+                    notePages={notePages}
+                    flattenedNotes={flattenedNotes}
+                    // setCurrentNoteIndex={setCurrentNoteIndex}
+                    // currentNoteIndex={currentNoteIndex}
+                    setCurrentNoteId={setCurrentNoteId}
+                    currentNoteId={currentNoteId}
+                    currentLectureNotes={currentLectureNotes}
+                    MAX_NOTE_PAGE={MAX_NOTE_PAGE}
+                    rollback={rollback} mode={mode}
+                    />
+                    
+                </div>
+            </div>
         </div>
     );
 }

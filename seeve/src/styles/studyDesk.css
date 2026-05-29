@@ -1,3 +1,74 @@
+/* =========================
+   CSS Reset / Init Style
+========================= */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 리스트 점/숫자 제거 */
+ul,
+ol,
+li {
+    list-style: none;
+}
+
+/* 링크 기본 스타일 제거 */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 이미지 정렬 문제 방지 */
+img {
+    display: block;
+    max-width: 100%;
+}
+
+/* 버튼 기본 스타일 제거 */
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+/* input 기본 outline 정리 */
+input,
+textarea,
+select,
+button {
+    font: inherit;
+    outline: none;
+}
+
+/* body 기본 설정 */
+body {
+    line-height: 1;
+    font-family: sans-serif;
+    color: #222;
+}
+
+/* 테이블 */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+/* wrap */
+#wrapper{
+    display: block;
+    position : relative;
+    height: 100vh;
+    background : var(--wrapper-background)
+}
+#flexWrap{
+    display: flex;
+    flex-direction: row;
+}
+
 /* professor */
 #ProfessorPageInfo{
     margin-bottom: 15px;
@@ -30,7 +101,7 @@
 /* ===========================
    button 공통
 =========================== */
-button{
+#flexWrap button{
     width: 140px;
     min-height: 30px;
 
@@ -51,15 +122,15 @@ button{
         transform 0.15s ease;
 }
 
-button:hover:not(:disabled){
+#flexWrap button:hover:not(:disabled){
     background: #e6e6e6;
 }
 
-button:active:not(:disabled){
+#flexWrap button:active:not(:disabled){
     transform: scale(0.98);
 }
 
-button:disabled{
+#flexWrap button:disabled{
     opacity: 0.4;
     cursor: default;
 }
