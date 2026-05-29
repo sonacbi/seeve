@@ -17,7 +17,7 @@ function ProfessorNavigator({
     professorOrder,
     setProfessorOrder,
 
-    isDeleteMode, isResetMode, isSortMode,
+    mode,
     rollback,
 }) {
 const {
@@ -46,7 +46,10 @@ const {
         rollback?.createRollback,
 });
 
-const isPending = isDeleteMode || isResetMode || isSortMode;
+const {
+    isDelete, isReset, isSort,
+    isPending,
+} = mode;
 
 
 const scrollRef = useRef(null);
@@ -170,48 +173,50 @@ useEffect(() => {
 
     return (
         <>  
-            {/* 리셋 버튼 */}
-            {isSortMode && (
+            <div className="professorButtonGroup">
+                {/* 리셋 버튼 */}
+                {isSort && (
+                    <button
+                        className="commitBtn"
+                        onClick={() => {
+                            clearRollback();
+                        }}
+                    >
+                        확정 (ㆍ)
+                    </button>
+                )}
                 <button
-                    className="commitBtn"
+                    className={
+                        isSort
+                            ? "undoBtn"
+                            : ""
+                    }
+                    disabled = {isDelete || isReset}
                     onClick={() => {
-                        clearRollback();
+
+                        if (
+                            isSort
+                        ) {
+
+                            rollbackAction({
+                                setNotePages,
+                                setCurrentNoteId,
+                                setProfessorOrder,
+                            });
+
+                            return;
+                        }
+                        
+                        sortProfessorPage();
                     }}
                 >
-                    확정 (ㆍ)
-                </button>
-            )}
-            <button
-                className={
-                    isSortMode
-                        ? "undoBtn"
-                        : ""
-                }
-                disabled = {isDeleteMode || isResetMode}
-                onClick={() => {
-
-                    if (
-                        isSortMode
-                    ) {
-
-                        rollbackAction({
-                            setNotePages,
-                            setCurrentNoteId,
-                            setProfessorOrder,
-                        });
-
-                        return;
-                    }
-
-                    sortProfessorPage();
-                }}
-            >
-                {
-                    isSortMode
+                    {
+                        isSort
                         ? "정렬 취소"
                         : "오름차순 정렬"
-                }
-            </button>
+                    }
+                </button>
+            </div>
 
             {/* 교수 페이지 슬롯 */}
                 <div className="professorSlot"

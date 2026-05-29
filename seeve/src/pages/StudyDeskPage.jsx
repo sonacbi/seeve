@@ -100,14 +100,16 @@ function StudyDeskPage() {
     pendingAction,
     } = rollback; // 구조분해
 
-    const isDeleteMode =
-    pendingAction?.type === "delete";
+    const mode = {
+        isDelete: pendingAction?.type === "delete",
+        isReset: pendingAction?.type === "reset",
+        isSort: pendingAction?.type === "sort-professor",
+    };
 
-    const isResetMode =
-    pendingAction?.type === "reset";
-
-    const isSortMode =
-    pendingAction?.type === "sort-professor";
+    mode.isPending =
+        mode.isDelete ||
+        mode.isReset ||
+        mode.isSort;
 
     return (
         <div
@@ -138,7 +140,7 @@ function StudyDeskPage() {
             // setCurrentNoteIndex={setCurrentNoteIndex}
             setCurrentNoteId={setCurrentNoteId}
             currentNoteId={currentNoteId}
-            isDeleteMode={isDeleteMode} isResetMode={isResetMode} isSortMode={isSortMode} // 롤백 제어용
+            mode={mode} // 롤백 제어용
             rollback={rollback}
         />
 
@@ -167,7 +169,7 @@ function StudyDeskPage() {
             currentNoteId={currentNoteId}
             currentLectureNotes={currentLectureNotes}
             MAX_NOTE_PAGE={MAX_NOTE_PAGE}
-            rollback={rollback} isDeleteMode={isDeleteMode} isResetMode={isResetMode} isSortMode={isSortMode}
+            rollback={rollback} mode={mode}
             />
             
         </div>

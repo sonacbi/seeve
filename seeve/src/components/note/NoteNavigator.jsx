@@ -17,11 +17,12 @@ function NoteNavigator({
 
     rollback,
 
-    isDeleteMode,
-    isResetMode,
-    isSortMode,
+    mode,
 }) {
-const isPending = isDeleteMode || isResetMode || isSortMode;
+const {
+    // isDelete, isReset, isSort,
+    isPending,
+} = mode;
 
 const dragIndexRef =
     useRef(null);
