@@ -6,8 +6,8 @@ function NoteControls({
     notePages,
     currentLectureNotes,
     flattenedNotes,
-    setCurrentNoteIndex,
-    currentNoteIndex,
+    setCurrentNoteId,
+    currentNoteId,
     currentNote,
     MAX_NOTE_PAGE,
 
@@ -34,8 +34,8 @@ const {
 } = useStudyDesk({
     currentLectureNotes,
     flattenedNotes,
-    setCurrentNoteIndex,
-    currentNoteIndex,
+    setCurrentNoteId,
+    currentNoteId,
     currentNote,
     setNotePages,
     notePages,
@@ -70,7 +70,7 @@ const {
                 onClick={() => {
 
                     if ( isDeleteMode ) {
-                        rollbackAction({ setNotePages, setCurrentNoteIndex, });
+                        rollbackAction({ setNotePages, setCurrentNoteId, });
                         return;
                     }
 
@@ -87,7 +87,7 @@ const {
                 onClick={() => {
 
                     if ( isResetMode ) {
-                        rollbackAction({ setNotePages, setCurrentNoteIndex, });
+                        rollbackAction({ setNotePages, setCurrentNoteId, });
                         return;
                     }
 
@@ -114,7 +114,7 @@ const {
             }}
             >
             <button onClick={()=>{
-                    if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteIndex, }, })
+                    if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteId, }, })
                     }else{ goPrev();}
                 }}
             >
@@ -123,7 +123,7 @@ const {
 
             <button
                 onClick={()=>{
-                    if(isPending){ withRollback({ action: goNext, context: { setNotePages, setCurrentNoteIndex, }, })
+                    if(isPending){ withRollback({ action: goNext, context: { setNotePages, setCurrentNoteId, }, })
                     }else{ goNext();}
                 }}
                 style={{

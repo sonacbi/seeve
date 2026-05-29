@@ -29,8 +29,11 @@ function StudyDeskPage() {
     const [notePages, setNotePages] =
         useState(createInitialPages);
 
-    const [currentNoteIndex, setCurrentNoteIndex] =
-        useState(0);
+    // const [currentNoteIndex, setCurrentNoteIndex] =
+    //     useState(0);
+    
+    const [currentNoteId, setCurrentNoteId] =
+        useState("p1-1");
 
     // flat 구조
     const flattenedNotes = Object.entries(
@@ -43,12 +46,18 @@ function StudyDeskPage() {
     );
 
     const currentNote =
-        flattenedNotes[currentNoteIndex] ?? flattenedNotes[0];
+        // flattenedNotes[currentNoteIndex] ?? flattenedNotes[0];
+        flattenedNotes.find(
+            (note) => note.id === currentNoteId
+        ) ?? flattenedNotes[0];
 
 
     // 현재 교수페이지의 노트
     const currentLectureNotes =
-        notePages[currentNote.lecturePage];
+        // notePages[currentNote.lecturePage];
+        currentNote
+            ? notePages[currentNote.lecturePage]
+            : [];
 
     // 현재 데이터 표기
     // const currentLectureIndex = parseInt(
@@ -94,7 +103,9 @@ function StudyDeskPage() {
             currentNote={currentNote}
             notePages={notePages}
             flattenedNotes={flattenedNotes}
-            setCurrentNoteIndex={setCurrentNoteIndex}
+            // setCurrentNoteIndex={setCurrentNoteIndex}
+            setCurrentNoteId={setCurrentNoteId}
+            currentNoteId={currentNoteId}
             isDeleteMode={isDeleteMode} isResetMode={isResetMode} // 롤백 제어용
         />
 
@@ -115,8 +126,10 @@ function StudyDeskPage() {
             setNotePages={setNotePages}
             notePages={notePages}
             flattenedNotes={flattenedNotes}
-            setCurrentNoteIndex={setCurrentNoteIndex}
-            currentNoteIndex={currentNoteIndex}
+            // setCurrentNoteIndex={setCurrentNoteIndex}
+            // currentNoteIndex={currentNoteIndex}
+            setCurrentNoteId={setCurrentNoteId}
+            currentNoteId={currentNoteId}
             currentLectureNotes={currentLectureNotes}
             MAX_NOTE_PAGE={MAX_NOTE_PAGE}
             rollback={rollback} isDeleteMode={isDeleteMode} isResetMode={isResetMode}

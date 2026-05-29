@@ -24,7 +24,7 @@ function useRollback() {
     // undo 실행
     const rollback = ({
         setNotePages,
-        setCurrentNoteIndex,
+        setCurrentNoteId,
     }) => {
 
         if (!pendingAction) return;
@@ -33,9 +33,9 @@ function useRollback() {
             pendingAction.snapshot.notePages
         );
 
-        setCurrentNoteIndex(
+        setCurrentNoteId(
             pendingAction.snapshot
-                .currentNoteIndex
+                .currentNoteId
         );
 
         clearRollback();
@@ -47,7 +47,7 @@ function useRollback() {
     }) => {
         rollback(context);
         clearRollback();
-        
+
         requestAnimationFrame(action);
         return;
     };

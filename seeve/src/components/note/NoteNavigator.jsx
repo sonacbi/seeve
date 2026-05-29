@@ -3,7 +3,10 @@ import useStudyDesk from "../../hooks/useStudyDesk";
 
 function NoteNavigator({
     flattenedNotes,
-    setCurrentNoteIndex,
+    // setCurrentNoteIndex,
+    setCurrentNoteId,
+    currentNoteId,
+
     setNotePages,
     currentLectureNotes,
     MAX_NOTE_PAGE,
@@ -21,7 +24,7 @@ const {
 } = useStudyDesk({
     currentLectureNotes,
     flattenedNotes,
-    setCurrentNoteIndex,
+    setCurrentNoteId,
 });
 
 // const {

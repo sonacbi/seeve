@@ -6,7 +6,8 @@ function ProfessorNavigator({
     // setNotePages,
     notePages,
     flattenedNotes,
-    setCurrentNoteIndex,
+    // setCurrentNoteIndex,
+    setCurrentNoteId,
     currentLectureIndex,
 
     isDeleteMode, isResetMode,
@@ -19,7 +20,7 @@ const {
     lectureCount,
     notePages,
     flattenedNotes,
-    setCurrentNoteIndex,
+    setCurrentNoteId,
     currentLectureIndex,
 });
 

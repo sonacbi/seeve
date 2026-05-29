@@ -1,8 +1,8 @@
 function useProfessor({
     currentLectureNotes,
     flattenedNotes,
-    setCurrentNoteIndex,
-    currentNoteIndex,
+    setCurrentNoteId,
+    // currentNoteIndex,
     currentNote,
     currentLectureIndex,
     lectureCount,
@@ -50,13 +50,7 @@ function useProfessor({
 
     if (!firstNote) return;
 
-    const globalIndex =
-        flattenedNotes.findIndex(
-        (note) =>
-            note.id === firstNote.id
-        );
-
-    setCurrentNoteIndex(globalIndex);
+    setCurrentNoteId( firstNote.id );
     };
 
 

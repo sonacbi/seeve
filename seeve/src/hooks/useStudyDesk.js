@@ -1,8 +1,10 @@
 function useStudyDesk({
     currentLectureNotes,
     flattenedNotes,
-    setCurrentNoteIndex,
-    currentNoteIndex,
+    // setCurrentNoteIndex,
+    setCurrentNoteId,
+    // currentNoteIndex,
+    currentNoteId,
     currentNote,
     // currentLectureIndex,
     // lectureCount,
@@ -23,12 +25,12 @@ function useStudyDesk({
 
         if (!target) return;
 
-        const globalIndex =
-        flattenedNotes.findIndex(
-          (note) => note.id === target.id
-        );
+        // const globalIndex =
+        // flattenedNotes.findIndex(
+        //   (note) => note.id === target.id
+        // );
 
-        setCurrentNoteIndex(globalIndex);
+        setCurrentNoteId(target.id)
     };
 
 //NoteControls
@@ -76,10 +78,13 @@ function useStudyDesk({
       return;
     }
 
+    // 삭제 후 이동할 페이지 id
+    let nextTargetId = null;
+    
     setNotePages((prev) => {
       // rollback 저장
       createRollback({ type: "delete",
-          snapshot: { notePages, currentNoteIndex, },
+          snapshot: { notePages, currentNoteId, },
       });
 
       const updated = { ...prev };
@@ -101,12 +106,23 @@ function useStudyDesk({
 
       updated[lecturePage] = filtered;
 
+      // 삭제 후 이동 위치
+      nextTargetId =
+          filtered[0]?.id ??
+          `${lecturePage}-1`;
+
       return updated;
     });
 
-    setCurrentNoteIndex((prev) =>
-      Math.max(prev - 1, 0)
-    );
+    // setCurrentNoteIndex((prev) =>
+    //   Math.max(prev - 1, 0)
+    // );
+    // setState 밖에서 이동
+    if (nextTargetId) {
+        setCurrentNoteId(
+            nextTargetId
+        );
+    }
   };
 
   // -----------------------
@@ -120,7 +136,7 @@ function useStudyDesk({
     setNotePages((prev) => {
       // rollback 저장
       createRollback({ type: "reset",
-        snapshot: { notePages, currentNoteIndex, },
+        snapshot: { notePages, currentNoteId, },
       });
 
       const updated = { ...prev };
@@ -145,18 +161,36 @@ function useStudyDesk({
   // 이동
   // -----------------------
   const goPrev = () => {
-    if (currentNoteIndex > 0) {
-      setCurrentNoteIndex((prev) => prev - 1);
+    // if (currentNoteIndex > 0) { setCurrentNoteIndex((prev) => prev - 1); }
+    const currentIndex =
+      flattenedNotes.findIndex(
+          (note) =>
+              note.id === currentNoteId
+      );
+
+    if (currentIndex > 0) {
+        setCurrentNoteId(
+            flattenedNotes[
+                currentIndex - 1
+            ].id
+        );
     }
   };
 
   const goNext = () => {
+    // if ( currentNoteIndex < flattenedNotes.length - 1 ) { setCurrentNoteIndex((prev) => prev + 1); }
+    const currentIndex =
+      flattenedNotes.findIndex(
+          (note) =>
+              note.id === currentNoteId
+      );
 
-    if (
-      currentNoteIndex <
-      flattenedNotes.length - 1
-    ) {
-      setCurrentNoteIndex((prev) => prev + 1);
+    if (currentIndex < flattenedNotes.length - 1 ) {
+        setCurrentNoteId(
+            flattenedNotes[
+                currentIndex + 1
+            ].id
+        );
     }
   };
 
