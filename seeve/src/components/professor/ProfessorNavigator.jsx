@@ -11,31 +11,43 @@ function ProfessorNavigator({
     flattenedNotes,
     // setCurrentNoteIndex,
     setCurrentNoteId,
+    currentNoteId,
     currentLectureIndex,
 
     professorOrder,
     setProfessorOrder,
 
-    isDeleteMode, isResetMode,
+    isDeleteMode, isResetMode, isSortMode,
+    rollback,
 }) {
+const {
+    clearRollback,
+    rollback:
+        rollbackAction,
+} = rollback;
 
 const {
     professorSlots,
     moveProfessorPage,
     swapProfessorPage,
+    sortProfessorPage,
 } = useProfessor({
     lectureCount,
     notePages,
     flattenedNotes,
     setCurrentNoteId,
+    currentNoteId,
     // setNotePages,
     professorOrder,
     setProfessorOrder,
 
     currentLectureIndex,
+    createRollback:
+        rollback?.createRollback,
 });
 
-const isPending = isDeleteMode || isResetMode;
+const isPending = isDeleteMode || isResetMode || isSortMode;
+
 
 const scrollRef = useRef(null);
 
@@ -157,7 +169,50 @@ useEffect(() => {
 
 
     return (
-        <>
+        <>  
+            {/* 리셋 버튼 */}
+            {isSortMode && (
+                <button
+                    className="commitBtn"
+                    onClick={() => {
+                        clearRollback();
+                    }}
+                >
+                    확정 (ㆍ)
+                </button>
+            )}
+            <button
+                className={
+                    isSortMode
+                        ? "undoBtn"
+                        : ""
+                }
+                disabled = {isDeleteMode || isResetMode}
+                onClick={() => {
+
+                    if (
+                        isSortMode
+                    ) {
+
+                        rollbackAction({
+                            setNotePages,
+                            setCurrentNoteId,
+                            setProfessorOrder,
+                        });
+
+                        return;
+                    }
+
+                    sortProfessorPage();
+                }}
+            >
+                {
+                    isSortMode
+                        ? "정렬 취소"
+                        : "오름차순 정렬"
+                }
+            </button>
+
             {/* 교수 페이지 슬롯 */}
                 <div className="professorSlot"
                 ref={scrollRef}
@@ -211,6 +266,7 @@ useEffect(() => {
                                         setDragOverIndex( null );
                                     }}
                                     onDrop={() => {
+                                        if (isPending) return;
                                         const from =
                                             dragIndexRef.current;
 

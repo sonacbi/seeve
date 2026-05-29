@@ -19,8 +19,9 @@ function NoteNavigator({
 
     isDeleteMode,
     isResetMode,
+    isSortMode,
 }) {
-const isPending = isDeleteMode || isResetMode;
+const isPending = isDeleteMode || isResetMode || isSortMode;
 
 const dragIndexRef =
     useRef(null);

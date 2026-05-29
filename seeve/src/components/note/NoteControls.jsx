@@ -13,6 +13,7 @@ function NoteControls({
 
     isDeleteMode,
     isResetMode,
+    isSortMode,
 
     rollback,
 }) {
@@ -44,14 +45,15 @@ const {
     createRollback,
     // clearRollback,
 });
-    const isPending = isDeleteMode || isResetMode;
+    const isPending = isDeleteMode || isResetMode || isSortMode;
 
     return (
         <>
             
             <button 
-                className={ isPending
+                className={ isDeleteMode || isResetMode
                 ? "commitBtn" : "" }
+                disabled ={isSortMode}
 
                 onClick={() => {
                     if(isPending){
@@ -59,12 +61,12 @@ const {
                     } else { addPage( currentNote.lecturePage ) }
                 } } >
 
-                { isPending ? "확정 (ㆍ)" : "메모 추가 (+)" }
+                { isDeleteMode || isResetMode ? "확정 (ㆍ)" : "메모 추가 (+)" }
                 
             </button>
 
             <button
-                disabled={isResetMode}
+                disabled={isResetMode || isSortMode }
                 className={ isDeleteMode ? "undoBtn" : "" }
 
                 onClick={() => {
@@ -81,7 +83,7 @@ const {
             </button>
 
             <button
-                disabled={isDeleteMode}
+                disabled={isDeleteMode || isSortMode}
                 className={ isResetMode ? "undoBtn" : "" }
 
                 onClick={() => {
@@ -117,6 +119,7 @@ const {
                     if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteId, }, })
                     }else{ goPrev();}
                 }}
+                disabled ={isSortMode}
             >
                 이전
             </button>
@@ -126,6 +129,7 @@ const {
                     if(isPending){ withRollback({ action: goNext, context: { setNotePages, setCurrentNoteId, }, })
                     }else{ goNext();}
                 }}
+                disabled ={isSortMode}
                 style={{
                 marginLeft: 10,
                 }}

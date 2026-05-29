@@ -25,6 +25,7 @@ function useRollback() {
     const rollback = ({
         setNotePages,
         setCurrentNoteId,
+        setProfessorOrder,
     }) => {
 
         if (!pendingAction) return;
@@ -37,6 +38,19 @@ function useRollback() {
             pendingAction.snapshot
                 .currentNoteId
         );
+        // 교수페이지 재정렬
+        if (
+            setProfessorOrder &&
+            pendingAction
+                .snapshot
+                .professorOrder
+        ) {
+            setProfessorOrder(
+                pendingAction
+                    .snapshot
+                    .professorOrder
+            );
+        }
 
         clearRollback();
     };

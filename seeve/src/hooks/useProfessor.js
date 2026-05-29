@@ -2,6 +2,7 @@ function useProfessor({
     currentLectureNotes,
     flattenedNotes,
     setCurrentNoteId,
+    currentNoteId,
     // currentNoteIndex,
     currentNote,
     currentLectureIndex,
@@ -12,6 +13,8 @@ function useProfessor({
 
     notePages,
     MAX_NOTE_PAGE,
+
+    createRollback,
 }) { 
   //ProfessorNavigator
   
@@ -75,6 +78,16 @@ function useProfessor({
         fromIndex,
         toIndex
     ) => {
+        // createRollback({
+        //     type:
+        //         "swap-professor",
+        //     snapshot: {
+        //         notePages,
+        //         currentNoteId,
+        //         professorOrder,
+        //     },
+        // });
+
         if (
             fromIndex == null ||
             fromIndex === toIndex
@@ -100,11 +113,53 @@ function useProfessor({
         );
     };
 
+    const sortProfessorPage =
+        () => {
+        createRollback({
+            type:
+                "sort-professor",
+            snapshot: {
+                notePages,
+                currentNoteId,
+                professorOrder,
+            },
+        });
+
+        setProfessorOrder(
+            (prev) =>
+                [...prev].sort(
+                    (a, b) => {
+
+                        const aNum =
+                            parseInt(
+                                a.replace(
+                                    "p",
+                                    ""
+                                )
+                            );
+
+                        const bNum =
+                            parseInt(
+                                b.replace(
+                                    "p",
+                                    ""
+                                )
+                            );
+
+                        return (
+                            aNum - bNum
+                        );
+                    }
+                )
+        );
+    };
+
 
     return {
         professorSlots,
         moveProfessorPage,
         swapProfessorPage,
+        sortProfessorPage,
     };
 
 }
