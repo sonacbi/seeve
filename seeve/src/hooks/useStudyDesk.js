@@ -9,6 +9,10 @@ function useStudyDesk({
     setNotePages,
     notePages,
     MAX_NOTE_PAGE,
+
+    // useRollback 계승
+    createRollback,
+    // clearRollback,
 }) { 
 
 //NoteNavigator
@@ -21,7 +25,7 @@ function useStudyDesk({
 
         const globalIndex =
         flattenedNotes.findIndex(
-            (note) => note.id === target.id
+          (note) => note.id === target.id
         );
 
         setCurrentNoteIndex(globalIndex);
@@ -73,6 +77,11 @@ function useStudyDesk({
     }
 
     setNotePages((prev) => {
+      // rollback 저장
+      createRollback({ type: "delete",
+          snapshot: { notePages, currentNoteIndex, },
+      });
+
       const updated = { ...prev };
 
       // 현재 페이지 제거
@@ -106,8 +115,14 @@ function useStudyDesk({
   const resetCurrentPage = () => {
     const lecturePage =
       currentNote.lecturePage;
+  
 
     setNotePages((prev) => {
+      // rollback 저장
+      createRollback({ type: "reset",
+        snapshot: { notePages, currentNoteIndex, },
+      });
+
       const updated = { ...prev };
 
       updated[lecturePage] =
@@ -136,6 +151,7 @@ function useStudyDesk({
   };
 
   const goNext = () => {
+
     if (
       currentNoteIndex <
       flattenedNotes.length - 1

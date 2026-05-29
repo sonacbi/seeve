@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import ProfessorPanel from "../components/professor/ProfessorPanel";
 import NotePanel from "../components/note/NotePanel"
+import useRollback from "../hooks/useRollback";
 
 function StudyDeskPage() {
     // 챕터표기용 가안
@@ -56,6 +57,20 @@ function StudyDeskPage() {
     const currentLectureIndex = currentNote
         ? parseInt(currentNote.lecturePage.replace("p", ""))
         : 1;
+
+    const rollback = useRollback();
+
+    const {
+    pendingAction,
+    } = rollback; // 구조분해
+
+    const isDeleteMode =
+    pendingAction?.type === "delete";
+
+    const isResetMode =
+    pendingAction?.type === "reset";
+
+
     return (
         <div
         style={{
@@ -75,10 +90,12 @@ function StudyDeskPage() {
         <ProfessorPanel
             currentLectureIndex={currentLectureIndex}
             lectureCount={lectureCount}
+            setNotePages={setNotePages}
             currentNote={currentNote}
             notePages={notePages}
             flattenedNotes={flattenedNotes}
             setCurrentNoteIndex={setCurrentNoteIndex}
+            isDeleteMode={isDeleteMode} isResetMode={isResetMode} // 롤백 제어용
         />
 
         </div>
@@ -102,6 +119,7 @@ function StudyDeskPage() {
             currentNoteIndex={currentNoteIndex}
             currentLectureNotes={currentLectureNotes}
             MAX_NOTE_PAGE={MAX_NOTE_PAGE}
+            rollback={rollback} isDeleteMode={isDeleteMode} isResetMode={isResetMode}
             />
             
         </div>

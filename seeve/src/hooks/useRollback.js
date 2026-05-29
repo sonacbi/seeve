@@ -41,11 +41,23 @@ function useRollback() {
         clearRollback();
     };
 
+    const withRollback = ({
+        action,
+        context,
+    }) => {
+        rollback(context);
+        clearRollback();
+        
+        requestAnimationFrame(action);
+        return;
+    };
+
     return {
         pendingAction,
         createRollback,
         clearRollback,
         rollback,
+        withRollback,
     };
 }
 

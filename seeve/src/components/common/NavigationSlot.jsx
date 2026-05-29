@@ -7,12 +7,14 @@ function NavigationSlot({
     width = 60,
     height = 60,
     background = "white",
+    isPending,
 }) {
     // slot 활성화, 비활성화 여부
         const className = `
         slot
         ${active ? "active" : ""}
         ${disabled ? "disabled" : ""}
+        ${isPending ? "isPending" : ""}
     `;
 
     return (

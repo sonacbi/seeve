@@ -10,7 +10,20 @@ function NoteControls({
     currentNoteIndex,
     currentNote,
     MAX_NOTE_PAGE,
+
+    isDeleteMode,
+    isResetMode,
+
+    rollback,
 }) {
+
+const {
+    // pendingAction,
+    createRollback,
+    clearRollback,
+    rollback: rollbackAction,
+    withRollback,
+} = rollback;
 
 const {
     addPage,
@@ -27,26 +40,61 @@ const {
     setNotePages,
     notePages,
     MAX_NOTE_PAGE,
-});
 
+    createRollback,
+    // clearRollback,
+});
+    const isPending = isDeleteMode || isResetMode;
 
     return (
         <>
             
-            <button onClick={() => addPage( currentNote.lecturePage ) } >
-                메모 추가 (+)
+            <button 
+                className={ isPending
+                ? "commitBtn" : "" }
+
+                onClick={() => {
+                    if(isPending){
+                        clearRollback(); return;
+                    } else { addPage( currentNote.lecturePage ) }
+                } } >
+
+                { isPending ? "확정 (ㆍ)" : "메모 추가 (+)" }
+                
             </button>
 
-            <button onClick={ deleteCurrentPage }
-            style={{ marginLeft: 10,
-            }}
+            <button
+                disabled={isResetMode}
+                className={ isDeleteMode ? "undoBtn" : "" }
+
+                onClick={() => {
+
+                    if ( isDeleteMode ) {
+                        rollbackAction({ setNotePages, setCurrentNoteIndex, });
+                        return;
+                    }
+
+                    deleteCurrentPage();
+                }}
             >
-                현재 페이지 삭제
+                { isDeleteMode ? "삭제 취소" : "현재 페이지 삭제" }
             </button>
 
-            <button onClick={ resetCurrentPage }
-            style = {{ marginLeft: 10, }}>
-                현재 페이지 초기화
+            <button
+                disabled={isDeleteMode}
+                className={ isResetMode ? "undoBtn" : "" }
+
+                onClick={() => {
+
+                    if ( isResetMode ) {
+                        rollbackAction({ setNotePages, setCurrentNoteIndex, });
+                        return;
+                    }
+
+                    resetCurrentPage();
+                }}
+            >
+                { isResetMode ? "초기화 취소" : "현재 페이지 초기화" }
             </button>
 
             <h3
@@ -65,12 +113,19 @@ const {
                 marginTop: 20,
             }}
             >
-            <button onClick={goPrev}>
+            <button onClick={()=>{
+                    if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteIndex, }, })
+                    }else{ goPrev();}
+                }}
+            >
                 이전
             </button>
 
             <button
-                onClick={goNext}
+                onClick={()=>{
+                    if(isPending){ withRollback({ action: goNext, context: { setNotePages, setCurrentNoteIndex, }, })
+                    }else{ goNext();}
+                }}
                 style={{
                 marginLeft: 10,
                 }}

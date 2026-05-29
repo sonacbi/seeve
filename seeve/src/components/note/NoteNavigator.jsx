@@ -4,10 +4,17 @@ import useStudyDesk from "../../hooks/useStudyDesk";
 function NoteNavigator({
     flattenedNotes,
     setCurrentNoteIndex,
+    setNotePages,
     currentLectureNotes,
     MAX_NOTE_PAGE,
     currentNote,
+
+    rollback,
+
+    isDeleteMode,
+    isResetMode,
 }) {
+const isPending = isDeleteMode || isResetMode;
 
 const {
     moveToNote
@@ -16,6 +23,11 @@ const {
     flattenedNotes,
     setCurrentNoteIndex,
 });
+
+// const {
+//     withRollback,
+//     // rollback: rollbackAction,
+// } = rollback;
 
     return (
         <>
@@ -37,12 +49,15 @@ const {
                                 "--slot-height": "60px",
                             }}
                             disabled={!page}
+                            isPending={isPending}
                             active={
                                 page?.id ===
                                 currentNote.id
                             }
-                            onClick={() =>
-                                moveToNote(index)
+                            onClick={()=>{
+                                    if(isPending) return;
+                                    moveToNote(index);
+                                }
                             }
                         >
                             {page ? page.id : ""}

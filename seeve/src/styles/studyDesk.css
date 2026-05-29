@@ -21,6 +21,26 @@
   margin-bottom: 8px;
 }
 
+/* undo button */
+.undoBtn {
+    background: #4da3ff;
+    color: white;
+    width: 140px;
+}
+
+.commitBtn{
+    background: #ff4d65;
+    color: white;
+    width: 140px;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+
+
 /* slot 공통 양식 */
 .slot {
     width: var(--slot-width);
@@ -48,6 +68,11 @@
 
 .slot.active {
     background: #ddd;
+}
+
+.slot.isPending{
+    pointer-events: none;
+    opacity: 0.5;
 }
 
 

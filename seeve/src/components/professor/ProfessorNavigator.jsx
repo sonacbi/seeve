@@ -3,10 +3,13 @@ import useProfessor from "../../hooks/useProfessor";
 
 function ProfessorNavigator({
     lectureCount,
+    // setNotePages,
     notePages,
     flattenedNotes,
     setCurrentNoteIndex,
     currentLectureIndex,
+
+    isDeleteMode, isResetMode,
 }) {
 
 const {
@@ -19,6 +22,8 @@ const {
     setCurrentNoteIndex,
     currentLectureIndex,
 });
+
+const isPending = isDeleteMode || isResetMode;
 
     return (
         <>
@@ -41,30 +46,26 @@ const {
                                         "--slot-height": "90px",
                                         "--slot--bg": background,
                                     }}
+                                    isPending={isPending}
                                     key={index}
                                     disabled={!slot}
                                     onClick={() =>
-                                        moveProfessorPage(
-                                            slot.lecturePage
-                                        )
+                                        {
+                                            if (isPending) return;
+                                            if (!slot) return;
+
+                                            moveProfessorPage(slot.lecturePage);
+                                        }
                                     }
                                 >
                                     {slot && (
                                         <>
                                             <div>
-                                                {
-                                                    slot.lecturePage
-                                                }
+                                                { slot.lecturePage }
                                             </div>
 
-                                            <div
-                                                style={{
-                                                    fontSize: 12,
-                                                }}
-                                            >
-                                                {
-                                                    slot.noteCount
-                                                }
+                                            <div style={{ fontSize: 12, }} >
+                                                { slot.noteCount }
                                                 page
                                             </div>
                                         </>
