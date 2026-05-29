@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+
 import NavigationSlot from "../common/NavigationSlot";
 import useStudyDesk from "../../hooks/useStudyDesk";
 
@@ -8,6 +10,7 @@ function NoteNavigator({
     currentNoteId,
 
     setNotePages,
+    notePages,
     currentLectureNotes,
     MAX_NOTE_PAGE,
     currentNote,
@@ -19,12 +22,26 @@ function NoteNavigator({
 }) {
 const isPending = isDeleteMode || isResetMode;
 
+const dragIndexRef =
+    useRef(null);
+
+const [dragOverIndex,
+    setDragOverIndex] =
+    useState(null);
+
 const {
-    moveToNote
+    moveToNote,
+    swapNotePage,
 } = useStudyDesk({
     currentLectureNotes,
     flattenedNotes,
     setCurrentNoteId,
+    currentNoteId,
+    setNotePages,
+    notePages,
+    currentNote,
+    createRollback:
+        rollback?.createRollback,
 });
 
 // const {
@@ -55,8 +72,46 @@ const {
                             isPending={isPending}
                             active={
                                 page?.id ===
-                                currentNote.id
+                                currentNote?.id
                             }
+                            draggable
+                            isDragOver={
+                                dragOverIndex ===
+                                index
+                            }
+                            onDragStart={() => {
+                                dragIndexRef.current =
+                                    index;
+                            }}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                setDragOverIndex( index );
+                            }}
+                            onDragLeave={() => {
+                                setDragOverIndex( null );
+                            }}
+                            onDrop={() => {
+                                const from =
+                                    dragIndexRef.current;
+
+                                const to = index;
+
+                                if (from == null) return;
+
+                                swapNotePage(
+                                    currentNote
+                                        ?.lecturePage,
+                                    from,
+                                    to
+                                );
+
+                                dragIndexRef.current =
+                                    null;
+
+                                setDragOverIndex(
+                                    null
+                                );
+                            }}
                             onClick={()=>{
                                     if(isPending) return;
                                     moveToNote(index);

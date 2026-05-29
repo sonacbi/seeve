@@ -194,7 +194,51 @@ function useStudyDesk({
     }
   };
 
-  //ProfessorNavigator
+  // 드래그앤 드랍 sort
+  // -----------------------
+  // note 슬롯 swap
+  // -----------------------
+  const swapNotePage = (
+      lecturePage,
+      fromIndex,
+      toIndex
+  ) => {
+      if (fromIndex === toIndex) return;
+
+      setNotePages((prev) => {
+          createRollback({
+              type: "swap-note",
+              snapshot: {
+                  notePages,
+                  currentNoteId,
+              },
+          });
+
+          const updated = { ...prev };
+
+          const pages = [
+              ...updated[lecturePage],
+          ];
+
+          // swap
+          [
+              pages[fromIndex],
+              pages[toIndex],
+          ] = [
+              pages[toIndex],
+              pages[fromIndex],
+          ];
+
+          // id 재정렬
+          updated[lecturePage] =
+              pages.map((page, index) => ({
+                  ...page,
+                  id: `${lecturePage}-${index + 1}`,
+              }));
+
+          return updated;
+      });
+  };
   
 
     return {
@@ -204,6 +248,7 @@ function useStudyDesk({
         resetCurrentPage,
         goPrev,
         goNext,
+        swapNotePage,
         // professorSlots,
         // moveProfessorPage,
     };

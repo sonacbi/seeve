@@ -1,16 +1,20 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 
 import NavigationSlot from "../common/NavigationSlot";
 import useProfessor from "../../hooks/useProfessor";
 
 function ProfessorNavigator({
     lectureCount,
-    // setNotePages,
+    
+    setNotePages,
     notePages,
     flattenedNotes,
     // setCurrentNoteIndex,
     setCurrentNoteId,
     currentLectureIndex,
+
+    professorOrder,
+    setProfessorOrder,
 
     isDeleteMode, isResetMode,
 }) {
@@ -18,17 +22,29 @@ function ProfessorNavigator({
 const {
     professorSlots,
     moveProfessorPage,
+    swapProfessorPage,
 } = useProfessor({
     lectureCount,
     notePages,
     flattenedNotes,
     setCurrentNoteId,
+    // setNotePages,
+    professorOrder,
+    setProfessorOrder,
+
     currentLectureIndex,
 });
 
 const isPending = isDeleteMode || isResetMode;
 
 const scrollRef = useRef(null);
+
+const dragIndexRef =
+    useRef(null);
+
+const [dragOverIndex,
+    setDragOverIndex] =
+    useState(null);
 
 /**
  * 특정 index 슬롯을
@@ -137,6 +153,9 @@ useEffect(() => {
     currentLectureIndex,
     scrollToIndex,
 ]);
+
+
+
     return (
         <>
             {/* 교수 페이지 슬롯 */}
@@ -170,11 +189,43 @@ useEffect(() => {
                                         {
                                             if (isPending) return;
                                             if (!slot) return;
-
+                                            
                                             moveProfessorPage(slot.lecturePage);
                                             // scrollToIndex(index);
                                         }
                                     }
+                                    isDragOver={
+                                        dragOverIndex ===
+                                        index
+                                    }
+                                    draggable
+                                    onDragStart={() => {
+                                        dragIndexRef.current =
+                                            index;
+                                    }}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        setDragOverIndex( index );
+                                    }}
+                                    onDragLeave={() => {
+                                        setDragOverIndex( null );
+                                    }}
+                                    onDrop={() => {
+                                        const from =
+                                            dragIndexRef.current;
+
+                                        swapProfessorPage(
+                                            from,
+                                            index
+                                        );
+
+                                        dragIndexRef.current =
+                                            null;
+
+                                        setDragOverIndex(
+                                            null
+                                        );
+                                    }}
                                 >
                                     {slot && (
                                         <>

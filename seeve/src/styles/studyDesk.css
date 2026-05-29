@@ -83,7 +83,9 @@ button:disabled {
     pointer-events: none;
     opacity: 0.5;
 }
-
+.slot.dragOver {
+    opacity: 0.45;
+}
 
 /* noteEditor */
 #NoteEditor{

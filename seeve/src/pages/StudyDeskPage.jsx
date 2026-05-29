@@ -8,18 +8,18 @@ function StudyDeskPage() {
     // 챕터표기용 가안
     const lectureCount = 56;
     const MAX_NOTE_PAGE = 5;
-
-
+    
+    
     // 초기 데이터 생성
     const createInitialPages = () => {
         const pages = {};
-
+        
         for (let i = 1; i <= lectureCount; i++) {
-        pages[`p${i}`] = [
-            {
-            id: `p${i}-1`,
-            content: "",
-            },
+            pages[`p${i}`] = [
+                {
+                    id: `p${i}-1`,
+                    content: "",
+                },
         ];
         }
 
@@ -29,21 +29,48 @@ function StudyDeskPage() {
     const [notePages, setNotePages] =
         useState(createInitialPages);
 
-    // const [currentNoteIndex, setCurrentNoteIndex] =
+        // const [currentNoteIndex, setCurrentNoteIndex] =
     //     useState(0);
     
     const [currentNoteId, setCurrentNoteId] =
         useState("p1-1");
 
-    // flat 구조
-    const flattenedNotes = Object.entries(
-        notePages
-    ).flatMap(([lecturePage, notes]) =>
-        notes.map((note) => ({
-        lecturePage,
-        ...note,
-        }))
+    // flat 구조 professor 페이지 대로.
+    // const flattenedNotes = Object.entries(
+    //     notePages
+    // ).flatMap(([lecturePage, notes]) =>
+        //     notes.map((note) => ({
+            //     lecturePage,
+            //     ...note,
+            //     }))
+            // );
+    const [professorOrder,
+        setProfessorOrder] =
+        useState(
+            Array.from(
+                { length: lectureCount },
+                (_, i) => `p${i + 1}`
+            )
     );
+    // 내비게이션 정렬된대로
+    const flattenedNotes =
+        professorOrder.flatMap(
+            (lecturePage) => {
+                    
+            const notes =
+                notePages[
+                    lecturePage
+                ] ?? [];
+
+            return notes.map(
+                (note) => ({
+                    lecturePage,
+                    ...note,
+                })
+            );
+        }
+    );
+
 
     const currentNote =
         // flattenedNotes[currentNoteIndex] ?? flattenedNotes[0];
@@ -99,6 +126,7 @@ function StudyDeskPage() {
             }}
         >
         <ProfessorPanel
+            professorOrder={ professorOrder } setProfessorOrder={ setProfessorOrder } // 리오더용
             currentLectureIndex={currentLectureIndex}
             lectureCount={lectureCount}
             setNotePages={setNotePages}
