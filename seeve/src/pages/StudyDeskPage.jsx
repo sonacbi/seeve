@@ -90,6 +90,8 @@ function StudyDeskPage() {
         {/* 교수 자료 */}
         <div
             style={{
+            position: "relative",
+            width : "50%",
             flex: 1,
             borderRight:
                 "1px solid lightgray",
@@ -116,6 +118,8 @@ function StudyDeskPage() {
             style={{
             flex: 1,
             padding: 20,
+            position: "relative",
+            width : "50%",
             }}
         >
 

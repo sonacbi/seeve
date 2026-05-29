@@ -35,7 +35,7 @@ const {
     return (
         <>
             {/* 슬롯 UI */}
-            <div className="pSlot noteSlot" // 하단 버튼과 간격 미세 조정 noteSlot
+            <div className="noteSlot" // 하단 버튼과 간격 미세 조정 noteSlot
             >
                 {[...Array(MAX_NOTE_PAGE)].map(
                     (_, index) => {
