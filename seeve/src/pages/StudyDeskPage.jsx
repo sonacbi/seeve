@@ -5,6 +5,8 @@ import NotePanel from "../components/note/NotePanel"
 import useRollback from "../hooks/useRollback";
 import FloatNavigator from "../components/FloatNavigator/FloatNavigator";
 
+import colorPalette from "../styles/color";
+
 function StudyDeskPage() {
     // 챕터표기용 가안
     const lectureCount = 56;
@@ -71,7 +73,10 @@ function StudyDeskPage() {
             );
         }
     );
-
+    const totalNoteCount = /*flattenedNotes.length;*/
+        flattenedNotes.filter(
+            note => note.content.trim().length > 0
+        ).length;
 
     const currentNote =
         // flattenedNotes[currentNoteIndex] ?? flattenedNotes[0];
@@ -113,7 +118,7 @@ function StudyDeskPage() {
         mode.isSort;
 
     const [isDark, setIsDark] = useState(false); // 테스트용 코드
-    const background = !isDark ? "lightgray" : "#1a1a1a";
+    const { background, c_background } = colorPalette(isDark);
 
     return (
 
@@ -123,18 +128,14 @@ function StudyDeskPage() {
             <FloatNavigator
                 isDark={isDark}
                 setIsDark={setIsDark}
+                colorPalette={colorPalette}
             />
 
             <div id="flexWrap">
                 {/* 교수 자료 */}
-                <div
+                <div className="flexContainer"
                     style={{
-                    position: "relative",
-                    width : "50%",
-                    flex: 1,
-                    borderRight:
-                        "1px solid black",
-                        padding: 20,
+                        "--wrap-children" : c_background,
                     }}
                 >
                 <ProfessorPanel
@@ -150,18 +151,15 @@ function StudyDeskPage() {
                     currentNoteId={currentNoteId}
                     mode={mode} // 롤백 제어용
                     rollback={rollback}
-                    isDark={isDark} setIsDark={setIsDark}
+                    isDark={isDark} setIsDark={setIsDark} colorPalette={colorPalette}
                 />
 
                 </div>
 
                 {/* 학습 노트 */}
-                <div
+                <div className="flexContainer"
                     style={{
-                    flex: 1,
-                    padding: 20,
-                    position: "relative",
-                    width : "50%",
+                        "--wrap-children" : c_background,
                     }}
                 >
 
@@ -172,6 +170,7 @@ function StudyDeskPage() {
                     setNotePages={setNotePages}
                     notePages={notePages}
                     flattenedNotes={flattenedNotes}
+                    totalNoteCount={totalNoteCount}
                     // setCurrentNoteIndex={setCurrentNoteIndex}
                     // currentNoteIndex={currentNoteIndex}
                     setCurrentNoteId={setCurrentNoteId}
@@ -179,7 +178,7 @@ function StudyDeskPage() {
                     currentLectureNotes={currentLectureNotes}
                     MAX_NOTE_PAGE={MAX_NOTE_PAGE}
                     rollback={rollback} mode={mode}
-                    isDark={isDark} setIsDark={setIsDark}
+                    isDark={isDark} setIsDark={setIsDark} colorPalette={colorPalette}
                     />
                     
                 </div>

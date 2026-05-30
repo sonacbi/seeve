@@ -1,4 +1,7 @@
-function LogoSVG() {
+function LogoSVG(props) {
+    const {isDark, colorPalette} = props;
+    const {iconColor} = colorPalette(!isDark);
+
     return (
         <div id="logo">
             <svg
@@ -13,7 +16,7 @@ function LogoSVG() {
                         <feGaussianBlur in="SourceGraphic" stdDeviation="1">
                             <animate attributeName="stdDeviation"
                                 values="1;3;1"
-                                dur="3s"
+                                dur="7s"
                                 repeatCount="indefinite" />
                         </feGaussianBlur>
                     </filter>
@@ -24,7 +27,7 @@ function LogoSVG() {
                     cx="16"
                     cy="16"
                     r="14"
-                    stroke="currentColor"
+                    stroke={iconColor}
                     strokeWidth="2"
                 />
 
@@ -43,7 +46,7 @@ function LogoSVG() {
                         L13 13
                         L15 13
                         Z"
-                        fill="currentColor"
+                        fill={iconColor}
                     />
                 </g>
 
@@ -67,7 +70,7 @@ function LogoSVG() {
                 >
                     <animate attributeName="stroke-width"
                         values="1;3;1"
-                        dur="2s"
+                        dur="2.2s"
                         repeatCount="indefinite" />
                 </path>
             </svg>

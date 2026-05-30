@@ -4,25 +4,25 @@ import { useState } from "react";
 import LogoSVG from "./LogoSVG";
 import FileSetting from "./FileSetting";
 
-function FloatNavigator({
-    isDark,
-    setIsDark
-}) {
-    const [isOpen, setIsOpen] =
-        useState(false);
+function FloatNavigator(props) {
+    const {isDark, setIsDark, colorPalette} = props;
+    const {textColor} = colorPalette(!isDark);
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div id="floatNavigator">
 
-            <LogoSVG />
+            <LogoSVG {...props}/>
 
             <FileSetting
+                {...props}
                 isOpen={isOpen}
                 setIsOpen={setIsOpen}
             />
 
             <button
                 className="navButton"
+                style={{"--nav-btn" : textColor}}
                 onClick={() =>
                     setIsDark(!isDark)
                 }
@@ -32,6 +32,7 @@ function FloatNavigator({
 
             <button
                 className="navButton"
+                style={{"--nav-btn" : textColor}}
                 onClick={() =>
                     console.log("setting")
                 }

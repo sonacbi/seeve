@@ -5,13 +5,21 @@ import ProfessorViewer from "./ProfessorViewer";
 import { ReactComponent as FireCandle } from "../../icon/fire_candle.svg";
 
 function ProfessorPanel(props) {
-    const {isDark} = props;
-    const iconColor = isDark? "white" : "black";
+    const {
+        lectureCount,
+        isDark, colorPalette} = props;
+    const {textColor, iconColor} = colorPalette(!isDark);
+
     return (
         <>
-            <h2 style={{"display" : "flex",}}>
+            <h2 className="areaHeader" style={{"display" : "flex", "--header-color" : textColor}}>
                 <FireCandle style={{ "--icon-color" : iconColor , width : "25px" }} className="icon" />
-            Prologue</h2>
+            <span className="headerText">
+                <span className="pre">pro</span>
+                <span className="logue">logue</span>
+            </span>
+            <span className="pageCount">총 {lectureCount} 페이지</span>
+            </h2>
 
             <ProfessorNavigator {...props} />
 

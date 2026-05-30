@@ -52,6 +52,13 @@
     color:#222;
     gap : 10px;
 }
+#saveName, #openFilePop{
+    color : var(--file-filter);
+}
+
+#saveName path {
+    fill : var(--file-filter) !important;
+}
 
 #saveName img {
     width : 15px;
@@ -72,9 +79,6 @@
     opacity:.7;
 }
 
-/* =========================
-   File List Popup
-========================= */
 /* =========================
    File List Popup
 ========================= */

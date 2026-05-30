@@ -1,4 +1,11 @@
 /* =========================
+   public/fonts
+========================= */
+@font-face {
+    font-family: "mulmaru";
+    src: url(../assets/Fonts/Mulmaru.ttf) format("truetype");
+}
+/* =========================
    CSS Reset / Init Style
 ========================= */
 
@@ -65,12 +72,68 @@ table {
 #wrapper{
     display: block;
     position : relative;
+    width: 100%;
     height: 100vh;
     background : var(--wrapper-background)
 }
 #flexWrap{
+    position: relative;
     display: flex;
     flex-direction: row;
+    width: 100%;
+    height: calc(100vh - 64px); /* 12+52 */
+
+    
+}
+
+.flexContainer{
+    display: flex;
+    flex-direction: column;
+    margin: 10px 8px;
+    padding : 10px 16px;
+    position: relative;
+    width : 50%;
+    background: var(--wrap-children);
+    border-radius: 12px;
+}
+.areaHeader{
+    grid-row-start: 1;
+    grid-column-start: 1;
+    border-bottom: 1px solid #222;
+    margin-bottom: 10px;
+    height : 45px;
+    color : var(--header-color);
+    gap : 10px;
+    align-items : center; /*세로축*/
+    /* align-content :center; */
+    justify-content: flex-start;
+}
+.areaHeader>.headerText{
+    font-family: "mulmaru";
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+}
+.pre {
+    position: relative;
+    letter-spacing: -1px;
+    opacity: 50%;
+    z-index: 2;
+    filter: blur(0.5px);
+}
+
+.logue {
+    position: relative;
+    color: transparent; /* 원본 숨김 */
+}
+.logue::after {
+    content: "logue";
+    position: absolute;
+    left: -2px;
+    top: 0;
+    color : var(--header-color);
+    pointer-events: none;
+    z-index: 1;
 }
 
 /* professor */
@@ -107,7 +170,14 @@ table {
 =========================== */
 #flexWrap button{
     width: 140px;
+    cursor: pointer;
+}
+#flexWrap button, .pageCount{
     min-height: 30px;
+
+    display:flex;
+    align-items: center;
+    justify-content: center;
 
     border: none;
     border-radius: 10px;
@@ -118,14 +188,12 @@ table {
     font-size: 14px;
     font-weight: 600;
 
-    cursor: pointer;
-
     transition:
         background 0.2s ease,
         opacity 0.2s ease,
         transform 0.15s ease;
 }
-
+.pageCount { padding : 0px 10px; font-size: 12px; }
 #flexWrap button:hover:not(:disabled){
     background: #e6e6e6;
 }
@@ -137,6 +205,11 @@ table {
 #flexWrap button:disabled{
     opacity: 0.4;
     cursor: default;
+}
+
+/* navi button */
+.navButton{
+    color : var(--nav-btn);
 }
 
 /* undo button */
@@ -160,19 +233,39 @@ table {
 }
 
 /* professor slot */
-.professorSlot{
+.professorNavWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+/* 좌우 버튼 */
+#flexWrap .navArrow {
+    width: 10px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    
+}
+
+/* 스크롤 영역 */
+.professorSlot {
     display: flex;
     gap: 10px;
 
-    margin-bottom: 20px;
-
-    width: var(--pSlot-width);
-
-    overflow-x: auto;
+    width: 100%;
+    min-width: 0;     /* ⭐ flex overflow 방지 핵심 */
+    /* width: calc((100% - 50px) / 5);; */
+    overflow-x: scroll; /* 또는 auto */
+    
 
     scroll-snap-type: x mandatory;
 }
-
+.professorSlot::-webkit-scrollbar {
+    display: none; /* Chrome 숨김 */
+}
 /* note slot */
 .noteSlot{
     display: flex;
@@ -182,12 +275,13 @@ table {
 }
 
 /* slot 공통 양식 */
-.slot{
+.noteSlot .slot, .professorSlot .slot{
     flex: 0 0 calc((100% - 50px) / 5);
-
+}
+.slot{    
     width: var(--slot-width);
     height: var(--slot-height);
-
+    aspect-ratio: var(--slot-ratio);
     border: 1px solid gray;
     border-radius: 12px;
 

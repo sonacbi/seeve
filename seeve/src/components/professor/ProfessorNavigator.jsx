@@ -169,6 +169,17 @@ useEffect(() => {
     scrollToIndex,
 ]);
 
+const scrollBy = (dir) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const targetWidth = el.children[0]?.clientWidth ?? 100;
+
+    el.scrollBy({
+        left: dir * (targetWidth + 10),
+        behavior: "smooth",
+    });
+};
 
 
     return (
@@ -219,92 +230,101 @@ useEffect(() => {
             </div>
 
             {/* 교수 페이지 슬롯 */}
-                <div className="professorSlot"
-                ref={scrollRef}
-                style={{ overflowX: "auto",  "--pSlot-width" : "100%"}} >
-                    {professorSlots.map(
-                        (slot, index) => {
-                            const isActive =
-                            slot?.lecturePage ===
-                            `p${currentLectureIndex}`;
+            <div className="professorNavWrapper">
+                <button className="navArrow" onClick={() => scrollBy(-1)}>
+                        ‹
+                </button>
+                    <div className="professorSlot"
+                    ref={scrollRef}
+                    style={{ }} >
+                        {professorSlots.map(
+                            (slot, index) => {
+                                const isActive =
+                                slot?.lecturePage ===
+                                `p${currentLectureIndex}`;
 
-                            const background =
-                                isActive
-                                    ? "#ffe66d"
-                                    : slot?.hasMemo
-                                    ? "#d8ecff"
-                                    : "#d9d9d9";
+                                const background =
+                                    isActive
+                                        ? "#ffe66d"
+                                        : slot?.hasMemo
+                                        ? "#d8ecff"
+                                        : "#d9d9d9";
 
-                            return (
-                                <NavigationSlot
-                                    style={{
-                                        "--slot-width": "90px",
-                                        "--slot-height": "90px",
-                                        "--slot--bg": background,
-                                    }}
-                                    isPending={isPending}
-                                    key={index}
-                                    disabled={!slot}
-                                    onClick={() =>
-                                        {
-                                            if (isPending) return;
-                                            if (!slot) return;
-                                            
-                                            moveProfessorPage(slot.lecturePage);
-                                            // scrollToIndex(index);
+                                return (
+                                    <NavigationSlot
+                                        style={{
+                                            "--slot-width": `clamp(60px, 10vw, 90px)`,
+                                            "--slot-ratio": "1 / 1.5",
+                                            "--slot--bg": background,
+                                        }}
+                                        isPending={isPending}
+                                        key={index}
+                                        disabled={!slot}
+                                        onClick={() =>
+                                            {
+                                                if (isPending) return;
+                                                if (!slot) return;
+                                                
+                                                moveProfessorPage(slot.lecturePage);
+                                                // scrollToIndex(index);
+                                            }
                                         }
-                                    }
-                                    isDragOver={
-                                        dragOverIndex ===
-                                        index
-                                    }
-                                    draggable
-                                    onDragStart={() => {
-                                        dragIndexRef.current =
-                                            index;
-                                    }}
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        setDragOverIndex( index );
-                                    }}
-                                    onDragLeave={() => {
-                                        setDragOverIndex( null );
-                                    }}
-                                    onDrop={() => {
-                                        if (isPending) return;
-                                        const from =
-                                            dragIndexRef.current;
-
-                                        swapProfessorPage(
-                                            from,
+                                        isDragOver={
+                                            dragOverIndex ===
                                             index
-                                        );
+                                        }
+                                        draggable
+                                        onDragStart={() => {
+                                            dragIndexRef.current =
+                                                index;
+                                        }}
+                                        onDragOver={(e) => {
+                                            e.preventDefault();
+                                            setDragOverIndex( index );
+                                        }}
+                                        onDragLeave={() => {
+                                            setDragOverIndex( null );
+                                        }}
+                                        onDrop={() => {
+                                            if (isPending) return;
+                                            const from =
+                                                dragIndexRef.current;
 
-                                        dragIndexRef.current =
-                                            null;
+                                            swapProfessorPage(
+                                                from,
+                                                index
+                                            );
 
-                                        setDragOverIndex(
-                                            null
-                                        );
-                                    }}
-                                >
-                                    {slot && (
-                                        <>
-                                            <div>
-                                                { slot.lecturePage }
-                                            </div>
+                                            dragIndexRef.current =
+                                                null;
 
-                                            <div style={{ fontSize: 12, }} >
-                                                { slot.noteCount }
-                                                page
-                                            </div>
-                                        </>
-                                    )}
-                                </NavigationSlot>
-                            );
-                        }
-                    )}
-                </div>
+                                            setDragOverIndex(
+                                                null
+                                            );
+                                        }}
+                                    >
+                                        {slot && (
+                                            <>
+                                                <div>
+                                                    { slot.lecturePage }
+                                                </div>
+
+                                                <div style={{ fontSize: 12, }} >
+                                                    { slot.noteCount }
+                                                    page
+                                                </div>
+                                            </>
+                                        )}
+                                    </NavigationSlot>
+                                );
+                            }
+                        )}
+                    </div>
+                <button className="navArrow"
+                    onClick={() => scrollBy(1)}>
+                    ›
+                </button>
+            </div>
         </>
     );
 }
