@@ -93,40 +93,30 @@ function ProfessorNavigator({
      * 중앙 기준으로 스크롤 이동
      */
     const scrollToIndex =
-    useCallback((index) => {
-        const el =
-            scrollRef.current;
+        useCallback((index) => {
 
-        if (!el) return;
+            const el =
+                scrollRef.current;
 
-        const target =
-            el.children[index];
+            if (!el) return;
 
-        if (!target) return;
+            const target =
+                el.querySelectorAll(
+                    ".slot"
+                )[index];
 
-        const maxScroll =
-            el.scrollWidth -
-            el.clientWidth;
+            if (!target) return;
 
-        const offset =
-            target.offsetLeft -
-            el.clientWidth / 2 +
-            target.clientWidth / 2;
+            target.scrollIntoView({
+                behavior:
+                    "smooth",
+                inline:
+                    "center",
+                block:
+                    "nearest",
+            });
 
-        const clamped =
-            Math.max(
-                0,
-                Math.min(
-                    offset,
-                    maxScroll
-                )
-            );
-
-        el.scrollTo({
-            left: clamped,
-            behavior: "smooth",
-        });
-    }, []);
+        }, []);
 
     /**
      * 마우스 휠 입력을
@@ -309,7 +299,7 @@ function ProfessorNavigator({
                     }
                 </button>
 
-                <div class="spacer" style={{flex:1}}></div>
+                <div className="spacer" style={{flex:1}}></div>
 
                     <div
                     style={{

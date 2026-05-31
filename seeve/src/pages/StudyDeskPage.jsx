@@ -123,7 +123,7 @@ function StudyDeskPage() {
 
     const [isDark, setIsDark] = useState(false); // 테스트용 코드
     const { background, c_background } = colorPalette(isDark);
-console.log(mode);
+// console.log(mode);
     return (
 
         <div id="wrapper"

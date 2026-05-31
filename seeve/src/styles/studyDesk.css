@@ -250,9 +250,10 @@ table {
 
 /* 좌우 버튼 */
 #flexWrap .navArrow {
-    width: 10px;
-    height: 32px;
-    border-radius: 8px;
+    width: 60px;
+    font-size: 30px;
+    aspect-ratio: 1/1;
+    border-radius: 20%;
     border: none;
     cursor: pointer;
     
@@ -261,7 +262,7 @@ table {
 /* 스크롤 영역 */
 .professorSlot {
     display: flex;
-    gap: 10px;
+    gap: 20px;
 
     width: 100%;
     min-width: 0;
@@ -286,8 +287,11 @@ table {
 }
 
 /* slot 공통 양식 */
-.noteSlot .slot, .professorSlot .slot{
+.noteSlot .slot{
     flex: 0 0 calc((100% - 50px) / 5);
+}
+.professorSlot .slot{
+    flex: 0 0 calc((100% - 240px) / 12);
 }
 .slot{    
     width: var(--slot-width);
@@ -343,10 +347,10 @@ table {
     /* border: var(--slot-border); */
     color : var(--slot-color);
     width: 100%;
-    aspect-ratio: 1/1.414;
+    aspect-ratio: 1/1.4;
     border-radius: 8%;
     
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .slot .PDFPageInfo{
@@ -369,7 +373,7 @@ table {
     font-size: 0.5rem;
     position: absolute;
     width: 100%;
-    transform: translateY(16px);
+    transform: translateY(14px);
     text-shadow:
     2px 0 2px rgba(245, 245, 245, 0.5),
     -2px 0 2px rgba(245, 245, 245, 0.5),
