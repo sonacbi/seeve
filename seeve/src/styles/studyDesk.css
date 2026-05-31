@@ -147,8 +147,9 @@ table {
 }
 
 #ProfessorViewer{
-    border: 1px solid black;
+    border: var(--professor-bd);
     height: 500px;
+    border-radius: 12px;
 
     display: flex;
     flex-direction: column;
@@ -440,7 +441,6 @@ table {
 }
 
 .additionalInfo{
-
     grid-template-columns: 1fr;
     grid-template-rows: repeat(3,33%);
 }
@@ -493,4 +493,8 @@ table {
     justify-content: space-between;
     position: absolute;
     bottom : 0px;
+}
+
+#flexWrap .p .bottomNarrow button{
+    width : 70px;
 }

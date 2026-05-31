@@ -2,9 +2,11 @@ import ProfessorPageInfo from "./ProfessorPageInfo";
 
 function ProfessorViewer(props) {
     const {currentLectureIndex, lectureCount, notePages, setCurrentNoteId,
+        currentNoteId, professorOrder, mode,
         isDark, colorPalette,
     } =props;
-    
+    const {screenBoder} = colorPalette(!isDark);
+    const pdfBackground = screenBoder;
     const moveProfessorPage = (lecturePage) => {
         const firstNote =
             notePages?.[lecturePage]?.[0];
@@ -14,21 +16,76 @@ function ProfessorViewer(props) {
         setCurrentNoteId(firstNote.id);
     };
 
-    const goPrevLecture = () => {
-        if (currentLectureIndex <= 1) return;
+    const {
+        // isDelete, isDeleteP, isReset, isSort,
+        isPending,
+    } = mode|| {};
+    
+    const currentProfessorPage =
+        professorOrder.find(
+            (page) =>
+                notePages[
+                    page
+                ]?.some(
+                    (note) =>
+                        note.id ===
+                        currentNoteId
+                )
+        ) ?? `p${currentLectureIndex}`;
 
-        moveProfessorPage(
-            `p${currentLectureIndex - 1}`
-        );
-    };
+    const currentProfessorIndex =
+        professorOrder.indexOf(
+            currentProfessorPage
+            );
+    
+    // const goPrevLecture = () => {
+    //     if (currentLectureIndex <= 1) return;
 
-    const goNextLecture = () => {
-        if (currentLectureIndex >= lectureCount) return;
+    //     moveProfessorPage(
+    //         `p${currentLectureIndex - 1}`
+    //     );
+    // };
 
-        moveProfessorPage(
-            `p${currentLectureIndex + 1}`
-        );
-    };
+    // const goNextLecture = () => {
+    //     if (currentLectureIndex >= lectureCount) return;
+
+    //     moveProfessorPage(
+    //         `p${currentLectureIndex + 1}`
+    //     );
+    // };
+
+        
+    const goPrevLecture =
+        () => {
+
+            if (
+                currentProfessorIndex <= 0
+            )
+                return;
+
+            moveProfessorPage(
+                professorOrder[
+                    currentProfessorIndex - 1
+                ]
+            );
+        };
+
+    const goNextLecture =
+        () => {
+
+            if (
+                currentProfessorIndex >=
+                professorOrder.length - 1
+            )
+                return;
+
+            moveProfessorPage(
+                professorOrder[
+                    currentProfessorIndex + 1
+                ]
+            );
+        };
+
     const {PDFScreenColor
     } = colorPalette(!isDark);
 
@@ -37,7 +94,7 @@ function ProfessorViewer(props) {
         <>
 
 
-            <div id="ProfessorViewer" >
+            <div id="ProfessorViewer" style={{"--professor-bd" : pdfBackground}} >
                 <div id="ProfessorEditNavi">
                     <ProfessorPageInfo currentLectureIndex={ props.currentLectureIndex } lectureCount={ props.lectureCount } />
                     <div className="spacer"></div>
@@ -77,23 +134,41 @@ function ProfessorViewer(props) {
             </div>
                 <div className="professorButtonGroup bottomNarrow">
 
-            <button
-                disabled={currentLectureIndex <= 1}
-                onClick={goPrevLecture}
-            >
-                ◀ p{currentLectureIndex - 1}
-            </button>
+                    <button
+                        disabled={
+                            (currentProfessorIndex <= 0) || isPending
+                        }
+                        onClick={goPrevLecture}
+                    >
+                        ◀ {
+                            professorOrder[
+                                currentProfessorIndex - 1
+                            ]
+                        }
+                    </button>
 
-            <span>
-                p{currentLectureIndex} / {lectureCount}
-            </span>
+                    <span>
+                        {currentProfessorPage}
+                        {" / "}
+                        {lectureCount}
+                    </span>
 
-            <button
-                disabled={currentLectureIndex >= lectureCount}
-                onClick={goNextLecture}
-            >
-                p{currentLectureIndex + 1} ▶
-            </button>
+                    <button
+                        disabled={
+                            (currentProfessorIndex >=
+                            professorOrder.length - 1)
+                            || isPending
+                        }
+                        onClick={goNextLecture}
+                    >
+                        {
+                            professorOrder[
+                                currentProfessorIndex + 1
+                            ]
+                        } ▶
+                    </button>
+                        
+
 
         </div>
         </>

@@ -6,6 +6,8 @@ const colorPalette = (
         const slot_active = !isDark ? "#ffa600" : "#ff8800";
         const whiteNblack = !isDark ? "#ffffff" : "#000000";
 
+        const screen_boder = isDark ? "#ffe66d" : "rgb(161, 159, 157)";
+
         const note_background = !isDark ? "rgb(127, 165, 235)" : "#d8ecff";
         const note_color = !isDark ? "#d8ecff" : "rgb(127, 165, 235)";
     
@@ -45,6 +47,7 @@ const colorPalette = (
                         0 -0.3px ${slot_active}`,
 
             // professor pdfScreen 컬러
+            screenBoder : `2px solid ${screen_boder}`,
             PDFScreenColor : !isDark ? "rgb(254, 246, 239)": "#d9d9d9", // 미선택
 
             // note 컬러

@@ -108,18 +108,22 @@ function StudyDeskPage() {
 
     const mode = {
         isDelete: pendingAction?.type === "delete",
+        isDeleteP: pendingAction?.type === "delete-professor",
+        // isDuplicate: pendingAction?.type === "duplicate-professor",
         isReset: pendingAction?.type === "reset",
         isSort: pendingAction?.type === "sort-professor",
     };
 
     mode.isPending =
         mode.isDelete ||
+        mode.isDeleteP ||
+        // mode.isDuplicate ||
         mode.isReset ||
         mode.isSort;
 
     const [isDark, setIsDark] = useState(false); // 테스트용 코드
     const { background, c_background } = colorPalette(isDark);
-
+console.log(mode);
     return (
 
         <div id="wrapper"

@@ -44,7 +44,7 @@ const {
     // clearRollback,
 });
 const {
-    isDelete, isReset, isSort,
+    isDelete, isDeleteP, isReset, isSort,
     isPending,
 } = mode;
 
@@ -55,7 +55,7 @@ const {
                 <button 
                     className={ isDelete || isReset
                         ? "commitBtn" : "" }
-                        disabled ={isSort}
+                        disabled ={isSort || isDeleteP}
                         
                     onClick={() => {
                         if(isPending){
@@ -68,7 +68,7 @@ const {
                 </button>
 
                 <button
-                    disabled={isReset || isSort }
+                    disabled={isReset || isSort || isDeleteP }
                     className={ isDelete ? "undoBtn" : "" }
 
                     onClick={() => {
@@ -85,7 +85,7 @@ const {
                 </button>
 
                 <button
-                    disabled={isDelete || isSort}
+                    disabled={isDelete || isSort || isDeleteP}
                     className={ isReset ? "undoBtn" : "" }
 
                     onClick={() => {
@@ -123,7 +123,7 @@ const {
                     if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteId, }, })
                         }else{ goPrev();}
                 }}
-                    disabled ={isSort}
+                    disabled ={isSort|| isDeleteP}
                     >
                     이전
                 </button>
@@ -133,7 +133,7 @@ const {
                         if(isPending){ withRollback({ action: goNext, context: { setNotePages, setCurrentNoteId, }, })
                         }else{ goNext();}
                     }}
-                    disabled ={isSort}
+                    disabled ={isSort|| isDeleteP}
                     style={{
                     marginLeft: 10,
                     }}

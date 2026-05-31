@@ -34,30 +34,49 @@ function ProfessorNavigator({
             rollbackAction,
     } = rollback;
 
-    const {
-        professorSlots,
-        moveProfessorPage,
-        swapProfessorPage,
-        sortProfessorPage,
-    } = useProfessor({
-        lectureCount,
-        notePages,
-        flattenedNotes,
-        setCurrentNoteId,
-        currentNoteId,
-        // setNotePages,
-        professorOrder,
-        setProfessorOrder,
+    const { professorSlots,
+            moveProfessorPage,
+            moveProfessorByNumber,
+            swapProfessorPage,
+            sortProfessorPage,
+            duplicateProfessorPage,
+            deleteProfessorPage,
+            isClonePage,
+        } = useProfessor({
+            lectureCount, 
+            notePages,
+            setNotePages, 
+            flattenedNotes, 
+            setCurrentNoteId, 
+            currentNoteId, 
+            professorOrder, 
+            setProfessorOrder, 
+            currentLectureIndex, 
+            createRollback: 
+            rollback?.createRollback, 
+        });
 
-        currentLectureIndex,
-        createRollback:
-            rollback?.createRollback,
-    });
+    const [pageInput, setPageInput] =
+        useState("");
 
     const {
-        isDelete, isReset, isSort,
+        isDelete, isDeleteP, isReset, isSort,
         isPending,
     } = mode;
+
+
+    const currentProfessorPage =
+        professorOrder.find(
+            (page) =>
+                notePages[
+                    page
+                ]?.some(
+                    (note) =>
+                        note.id ===
+                        currentNoteId
+                )
+        ) ?? `p${currentLectureIndex}`;
+
 
 
     const scrollRef = useRef(null);
@@ -145,16 +164,37 @@ function ProfessorNavigator({
      * 현재 lecture 변경 시
      * 해당 슬롯으로 자동 이동
      */
-    useEffect(() => {
-        const index =
-            currentLectureIndex - 1;
+    // useEffect(() => {
+    //     const index =
+    //         currentLectureIndex - 1;
 
-        scrollToIndex(index);
+    //     scrollToIndex(index);
+
+    // }, [
+    //     currentLectureIndex,
+    //     scrollToIndex,
+    // ]);
+    
+    useEffect(() => {
+
+        const index =
+            professorOrder.indexOf(
+                currentProfessorPage
+            );
+
+        if (index >= 0) {
+            scrollToIndex(
+                index
+            );
+        }
 
     }, [
-        currentLectureIndex,
+        currentProfessorPage,
+        professorOrder,
         scrollToIndex,
     ]);
+
+
 
     const scrollBy = (dir) => {
         const el = scrollRef.current;
@@ -173,7 +213,8 @@ function ProfessorNavigator({
         <>  
             <div className="professorButtonGroup">
                 {/* 리셋 버튼 */}
-                {isSort && (
+                {(isSort || isDeleteP)
+                 && (
                     <button
                         className="commitBtn"
                         onClick={() => {
@@ -189,7 +230,7 @@ function ProfessorNavigator({
                             ? "undoBtn"
                             : ""
                     }
-                    disabled = {isDelete || isReset}
+                    disabled = {isDeleteP || isDelete || isReset}
                     onClick={() => {
 
                         if (
@@ -214,15 +255,112 @@ function ProfessorNavigator({
                         : "≡▴"
                     }
                 </button>
-                {/* 활성화된 페이지번호 복사. 처음 복제시 p1 → p1(1), 연관된 노트도 p1(1)-1로 변경 p1(2), p1(3), p1(4)식으로 복제*/}
-                <button>
+
+                <button
+                    disabled={isPending}
+                    onClick={
+                        duplicateProfessorPage
+                    }
+                >
                     ⫘
                 </button>
-                {/* 복사된 페이지만 사용가능. 중복체크를한다. 복제된 페이지 삭제 롤백기능 있어야함*/}
-                <button>
-                    ⨱
+
+                <button
+                    className={
+                        isDelete
+                            ? "undoBtn"
+                            : ""
+                    }
+                    disabled={
+                        (
+                            !currentProfessorPage ||
+                            !isClonePage(
+                                currentProfessorPage
+                            )
+                        ) ||
+
+                        (
+                            isPending &&
+                            !isDelete
+                        )
+                    }
+                    onClick={() => {
+
+                        if (
+                            isDelete
+                        ) {
+
+                            rollbackAction({
+                                setNotePages,
+                                setCurrentNoteId,
+                                setProfessorOrder,
+                            });
+
+                            return;
+                        }
+
+                        deleteProfessorPage();
+                    }}
+                >
+                    {
+                        isDelete
+                            ? "⨱↺"
+                            : "⨱"
+                    }
                 </button>
-                {/* 텍스트홀더로 nn까지 입력. 이라 적힌 텍스트필드. 최대값을 넘기면 자동으로 최대값으로 바꿔서 입력 활성화된 페이지를 바꾼다.  */}
+
+                <div class="spacer" style={{flex:1}}></div>
+
+                    <div
+                    style={{
+                        display: "flex",
+                        gap: "6px",
+                    }}
+                    >
+                        <input
+                            value={pageInput}
+                            disabled={isPending}
+                            placeholder={`${lectureCount}`}
+                            onChange={(e) => {
+
+                                const onlyNumber =
+                                    e.target.value.replace(
+                                        /\D/g,
+                                        ""
+                                    );
+
+                                setPageInput(
+                                    onlyNumber
+                                );
+                            }}
+                            onKeyDown={(e) => {
+
+                                if (
+                                    e.key ===
+                                    "Enter"
+                                ) {
+
+                                    moveProfessorByNumber(
+                                        pageInput
+                                    );
+                                }
+                            }}
+                            style={{
+                                width: "60px",
+                            }}
+                        />
+
+                        <button
+                        disabled={isPending}
+                            onClick={() =>
+                                moveProfessorByNumber(
+                                    pageInput
+                                )
+                            }
+                        >
+                            →
+                        </button>
+                    </div>
             </div>
 
             {/* 교수 페이지 슬롯 */}
@@ -235,9 +373,13 @@ function ProfessorNavigator({
                     style={{ }} >
                         {professorSlots.map(
                             (slot, index) => {
+                                // const isActive =
+                                // slot?.lecturePage ===
+                                // `p${currentLectureIndex}`;
                                 const isActive =
-                                slot?.lecturePage ===
-                                `p${currentLectureIndex}`;
+                                    slot?.lecturePage ===
+                                    currentProfessorPage;
+
                                 // console.log(slot?.lecturePage, `p${currentLectureIndex}`);
                                 const slotActive =
                                 `PDFPageInfo ${isActive
@@ -332,7 +474,7 @@ function ProfessorNavigator({
                                                     { slot.lecturePage }
                                                 </div>
 
-                                                <div className="noteCount"s style={{ "--slot-border":ActiveBorder,}} >
+                                                <div className="noteCount" style={{ "--slot-border":ActiveBorder,}} >
                                                     { slot.noteCount }
                                                     page
                                                 </div>

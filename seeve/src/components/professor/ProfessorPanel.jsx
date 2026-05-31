@@ -20,12 +20,14 @@ function ProfessorPanel(props) {
             <span className="pageCount">📑 총 {lectureCount} 페이지</span>
             </h2>
 
-            <ProfessorNavigator {...props} />
+            <ProfessorNavigator {...props}
+                />
 
             <h1>
                 {/* {currentNote.lecturePage} */}
             </h1>
-            <ProfessorViewer {...props} />
+            <ProfessorViewer {...props}
+            />
         </>
     );
 }
