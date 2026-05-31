@@ -1,9 +1,18 @@
+import { useState, useRef, useEffect } from "react";
+import { Document, Page } from "react-pdf";
+import { pdfjs } from "react-pdf";
+
 import ProfessorPageInfo from "./ProfessorPageInfo";
+
+pdfjs.GlobalWorkerOptions.workerSrc =
+    `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 
 function ProfessorViewer(props) {
     const {currentLectureIndex, lectureCount, notePages, setCurrentNoteId,
         currentNoteId, professorOrder, mode,
         isDark, colorPalette,
+        pdfFile, setLectureCount,
     } =props;
     const {screenBoder} = colorPalette(!isDark);
     const pdfBackground = screenBoder;
@@ -53,8 +62,49 @@ function ProfessorViewer(props) {
     //         `p${currentLectureIndex + 1}`
     //     );
     // };
-
+    // const [pageNumber,
+    //     setPageNumber] =
+    //     useState(1);
+    const [numPages,
+        setNumPages] =
+        useState(null);
+    const pageNumber =
+        Math.min(
+            currentLectureIndex,
+            numPages ?? 1
+        );
         
+
+
+    const pdfScreenRef =
+        useRef(null);
+
+    const [pdfWidth,
+        setPdfWidth] =
+        useState(0);
+        
+    useEffect(() => {
+        if (!pdfScreenRef.current)
+            return;
+
+        const observer =
+            new ResizeObserver(
+                ([entry]) => {
+                    setPdfWidth(
+                        entry.contentRect
+                            .width
+                    );
+                }
+            );
+
+        observer.observe(
+            pdfScreenRef.current
+        );
+
+        return () =>
+            observer.disconnect();
+    }, []);
+            
     const goPrevLecture =
         () => {
 
@@ -85,7 +135,7 @@ function ProfessorViewer(props) {
                 ]
             );
         };
-
+console.log(pdfFile);
     const {PDFScreenColor
     } = colorPalette(!isDark);
 
@@ -128,8 +178,52 @@ function ProfessorViewer(props) {
                         </button>
                     </div>
                 </div>
-                <div id="PDFScreen" style={{"--screen-bg" : screenColor}}>
-                    PDF 영역
+                <div
+                    id="PDFScreen"
+                    ref={pdfScreenRef}
+                    style={{
+                        "--screen-bg":
+                            screenColor
+                    }}
+                >
+                    {!pdfFile ? (
+                        <div>
+                            PDF를 선택하세요
+                        </div>
+                    ) : (
+<Document
+    file={pdfFile}
+    onLoadSuccess={({ numPages }) => {
+        console.log(
+            "PDF loaded:",
+            numPages
+        );
+
+        setNumPages(numPages);
+
+        if (
+            lectureCount !==
+            numPages
+        ) {
+            setLectureCount(
+                numPages
+            );
+        }
+    }}
+    onLoadError={(error) => {
+        console.error(
+            "PDF load error:",
+            error
+        );
+    }}
+>
+                            <Page
+                                pageNumber={pageNumber}
+                                width={pdfWidth
+                                }
+                            />
+                        </Document>
+                    )}
                 </div>
             </div>
                 <div className="professorButtonGroup bottomNarrow">

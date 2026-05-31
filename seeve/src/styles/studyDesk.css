@@ -150,11 +150,11 @@ table {
     border: var(--professor-bd);
     height: 500px;
     border-radius: 12px;
-
+    padding : 0px 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     position: relative;
 }
 
@@ -465,12 +465,21 @@ table {
 }
 
 #PDFScreen{
-    /* border: #222 1px solid; */
-    /* aspect-ratio: 1.414/1; */
     background: var(--screen-bg);
-    width: 95%;
-    flex:1;
-    margin:0px 2.5% 20px 2.5%;
+
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+
+    overflow: auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 12px;
+    margin-bottom: 20px;
+
     border-radius: 3%;
 }
 
@@ -501,4 +510,24 @@ table {
 
 #flexWrap .p .bottomNarrow button{
     width : 70px;
+}
+
+.react-pdf__Document{
+    width: 100%;
+    display:flex;
+    justify-content:center;
+}
+
+.react-pdf__Page{
+    max-width:100%;
+    overflow: hidden !important;
+}
+
+.react-pdf__Page canvas{
+    display:block;
+
+    max-width:100%;
+    width:100% !important;
+
+    height:auto !important;
 }

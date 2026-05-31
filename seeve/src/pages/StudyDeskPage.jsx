@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import ProfessorPanel from "../components/professor/ProfessorPanel";
 import NotePanel from "../components/note/NotePanel"
@@ -8,32 +8,125 @@ import FloatNavigator from "../components/FloatNavigator/FloatNavigator";
 import colorPalette from "../styles/color";
 
 function StudyDeskPage() {
+    const [pdfFile, setPdfFile] =
+        useState(null);
+
     // 챕터표기용 가안
-    const lectureCount = 56;
+    const [lectureCount,
+        setLectureCount] =
+        useState(1);
     const MAX_NOTE_PAGE = 5;
     
     
     // 초기 데이터 생성
-    const createInitialPages = () => {
+    const createInitialPages = (
+        count
+    ) => {
         const pages = {};
-        
-        for (let i = 1; i <= lectureCount; i++) {
+
+        for (
+            let i = 1;
+            i <= count;
+            i++
+        ) {
             pages[`p${i}`] = [
                 {
-                    id: `p${i}-1`,
+                    id:
+                        `p${i}-1`,
                     content: "",
                 },
-        ];
+            ];
         }
 
         return pages;
     };
 
-    const [notePages, setNotePages] =
-        useState(createInitialPages);
+    const [notePages,
+        setNotePages] =
+        useState(
+            () =>
+                createInitialPages(
+                    lectureCount
+                )
+        );
+    useEffect(() => {
+        setNotePages(
+            (prev) => {
 
-        // const [currentNoteIndex, setCurrentNoteIndex] =
-    //     useState(0);
+                const next =
+                    { ...prev };
+
+                for (
+                    let i = 1;
+                    i <= lectureCount;
+                    i++
+                ) {
+
+                    const key =
+                        `p${i}`;
+
+                    if (
+                        !next[key]
+                    ) {
+                        next[key] = [
+                            {
+                                id:
+                                    `${key}-1`,
+                                content:
+                                    "",
+                            },
+                        ];
+                    }
+                }
+
+                return next;
+            }
+        );
+
+        setProfessorOrder(
+            Array.from(
+                {
+                    length:
+                        lectureCount
+                },
+                (_, i) =>
+                    `p${i + 1}`
+            )
+        );
+
+    }, [lectureCount]);
+            // const [currentNoteIndex, setCurrentNoteIndex] =
+        //     useState(0);
+
+    useEffect(() => {
+        console.log(lectureCount);
+
+        setNotePages((prev) => {
+            const next = { ...prev };
+
+            for (
+                let i = 1;
+                i <= lectureCount;
+                i++
+            ) {
+                const key = `p${i}`;
+
+                if (!next[key]) {
+                    next[key] = [
+                        {
+                            id: `${key}-1`,
+                            content: "",
+                        },
+                    ];
+                }
+            }
+
+            console.log(next);
+
+            return next;
+        });
+
+    }, [lectureCount]);
     
     const [currentNoteId, setCurrentNoteId] =
         useState("p1-1");
@@ -124,6 +217,12 @@ function StudyDeskPage() {
     const [isDark, setIsDark] = useState(false); // 테스트용 코드
     const { background, c_background } = colorPalette(isDark);
 // console.log(mode);
+// useEffect(() => {
+//     console.log(
+//         "lectureCount:",
+//         lectureCount
+//     );
+// }, [lectureCount]);
     return (
 
         <div id="wrapper"
@@ -133,6 +232,10 @@ function StudyDeskPage() {
                 isDark={isDark}
                 setIsDark={setIsDark}
                 colorPalette={colorPalette}
+
+                pdfFile={pdfFile}
+                setPdfFile={setPdfFile}
+                setLectureCount={ setLectureCount }
             />
 
             <div id="flexWrap">
@@ -146,6 +249,7 @@ function StudyDeskPage() {
                     professorOrder={ professorOrder } setProfessorOrder={ setProfessorOrder } // 리오더용
                     currentLectureIndex={currentLectureIndex}
                     lectureCount={lectureCount}
+                    setLectureCount={ setLectureCount }
                     setNotePages={setNotePages}
                     currentNote={currentNote}
                     notePages={notePages}
@@ -156,6 +260,8 @@ function StudyDeskPage() {
                     mode={mode} // 롤백 제어용
                     rollback={rollback}
                     isDark={isDark} setIsDark={setIsDark} colorPalette={colorPalette}
+
+                    pdfFile={pdfFile}
                 />
 
                 </div>

@@ -6,6 +6,7 @@ function FileSetting(props) {
     const {isDark, colorPalette} = props;
     const {textColor, iconColor} = colorPalette(!isDark);
     const {isOpen, setIsOpen} = props;
+    const {setPdfFile, pdfFile} = props;
 
     const [shouldRender, setShouldRender] =
         useState(isOpen);
@@ -33,19 +34,22 @@ function FileSetting(props) {
             <button
                 id="openFilePop"
                 style={{"--file-filter" : textColor}}
-                onClick={() =>
-                    setIsOpen(!isOpen)
-                }
+                onClick={() =>{
+                    setIsOpen(!isOpen);
+                }}
             >
                 ∨
             </button>
 
             {shouldRender && (
                 <FileList
+                    setIsOpen={setIsOpen}
                     isOpen={isOpen}
                     onAnimationEnd={
                         closeAnimationEnd
                     }
+                    pdfFile={pdfFile}
+                    setPdfFile={setPdfFile}
                 />
             )}
         </div>
