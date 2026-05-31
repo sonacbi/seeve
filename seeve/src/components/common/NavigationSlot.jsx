@@ -20,7 +20,7 @@ function NavigationSlot({
     // slot 활성화, 비활성화 여부
         const className = `
         slot
-        ${active ? "active" : ""}
+        ${active ? "active" : "notActive"}
         ${disabled ? "disabled" : ""}
         ${isPending ? "isPending" : ""}
         ${isDragOver ? "dragOver" : ""}

@@ -1,5 +1,4 @@
 import ProfessorNavigator from "./ProfessorNavigator";
-import ProfessorPageInfo from "./ProfessorPageInfo";
 import ProfessorViewer from "./ProfessorViewer";
 
 import { ReactComponent as FireCandle } from "../../icon/fire_candle.svg";
@@ -18,23 +17,15 @@ function ProfessorPanel(props) {
                 <span className="pre">pro</span>
                 <span className="logue">logue</span>
             </span>
-            <span className="pageCount">총 {lectureCount} 페이지</span>
+            <span className="pageCount">📑 총 {lectureCount} 페이지</span>
             </h2>
 
             <ProfessorNavigator {...props} />
 
-            <ProfessorPageInfo
-                currentLectureIndex={
-                    props.currentLectureIndex
-                }
-                lectureCount={
-                    props.lectureCount
-                }
-            />
             <h1>
                 {/* {currentNote.lecturePage} */}
             </h1>
-            <ProfessorViewer />
+            <ProfessorViewer {...props} />
         </>
     );
 }

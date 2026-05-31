@@ -4,6 +4,9 @@ import NavigationSlot from "../common/NavigationSlot";
 import useProfessor from "../../hooks/useProfessor";
 
 function ProfessorNavigator({
+    isDark,
+    colorPalette,
+
     lectureCount,
     
     setNotePages,
@@ -20,166 +23,171 @@ function ProfessorNavigator({
     mode,
     rollback,
 }) {
-const {
-    clearRollback,
-    rollback:
-        rollbackAction,
-} = rollback;
+    const {textColor, slotBorder, slotBorder_A, slotColor, slotColor_A,
+    /*slotShadow,*/ slotShadow_A,
+    slotBackground, slotMemoBackground, slotActiveBackground, 
+    } = colorPalette(!isDark);
 
-const {
-    professorSlots,
-    moveProfessorPage,
-    swapProfessorPage,
-    sortProfessorPage,
-} = useProfessor({
-    lectureCount,
-    notePages,
-    flattenedNotes,
-    setCurrentNoteId,
-    currentNoteId,
-    // setNotePages,
-    professorOrder,
-    setProfessorOrder,
+    const {
+        clearRollback,
+        rollback:
+            rollbackAction,
+    } = rollback;
 
-    currentLectureIndex,
-    createRollback:
-        rollback?.createRollback,
-});
+    const {
+        professorSlots,
+        moveProfessorPage,
+        swapProfessorPage,
+        sortProfessorPage,
+    } = useProfessor({
+        lectureCount,
+        notePages,
+        flattenedNotes,
+        setCurrentNoteId,
+        currentNoteId,
+        // setNotePages,
+        professorOrder,
+        setProfessorOrder,
 
-const {
-    isDelete, isReset, isSort,
-    isPending,
-} = mode;
-
-
-const scrollRef = useRef(null);
-
-const dragIndexRef =
-    useRef(null);
-
-const [dragOverIndex,
-    setDragOverIndex] =
-    useState(null);
-
-/**
- * 특정 index 슬롯을
- * 중앙 기준으로 스크롤 이동
- */
-const scrollToIndex =
-useCallback((index) => {
-    const el =
-        scrollRef.current;
-
-    if (!el) return;
-
-    const target =
-        el.children[index];
-
-    if (!target) return;
-
-    const maxScroll =
-        el.scrollWidth -
-        el.clientWidth;
-
-    const offset =
-        target.offsetLeft -
-        el.clientWidth / 2 +
-        target.clientWidth / 2;
-
-    const clamped =
-        Math.max(
-            0,
-            Math.min(
-                offset,
-                maxScroll
-            )
-        );
-
-    el.scrollTo({
-        left: clamped,
-        behavior: "smooth",
+        currentLectureIndex,
+        createRollback:
+            rollback?.createRollback,
     });
-}, []);
 
-/**
- * 마우스 휠 입력을
- * 가로 스크롤로 변환
- */
-useEffect(() => {
-    const el =
-        scrollRef.current;
+    const {
+        isDelete, isReset, isSort,
+        isPending,
+    } = mode;
 
-    if (!el) return;
 
-    const handleWheel =
-        (e) => {
-            e.preventDefault();
+    const scrollRef = useRef(null);
 
-            el.scrollLeft +=
-                e.deltaY;
-        };
+    const dragIndexRef =
+        useRef(null);
 
-    el.addEventListener(
-        "wheel",
-        handleWheel,
-        { passive: false }
-    );
+    const [dragOverIndex,
+        setDragOverIndex] =
+        useState(null);
 
-    return () => {
-        el.removeEventListener(
+    /**
+     * 특정 index 슬롯을
+     * 중앙 기준으로 스크롤 이동
+     */
+    const scrollToIndex =
+    useCallback((index) => {
+        const el =
+            scrollRef.current;
+
+        if (!el) return;
+
+        const target =
+            el.children[index];
+
+        if (!target) return;
+
+        const maxScroll =
+            el.scrollWidth -
+            el.clientWidth;
+
+        const offset =
+            target.offsetLeft -
+            el.clientWidth / 2 +
+            target.clientWidth / 2;
+
+        const clamped =
+            Math.max(
+                0,
+                Math.min(
+                    offset,
+                    maxScroll
+                )
+            );
+
+        el.scrollTo({
+            left: clamped,
+            behavior: "smooth",
+        });
+    }, []);
+
+    /**
+     * 마우스 휠 입력을
+     * 가로 스크롤로 변환
+     */
+    useEffect(() => {
+        const el =
+            scrollRef.current;
+
+        if (!el) return;
+
+        const handleWheel =
+            (e) => {
+                e.preventDefault();
+
+                el.scrollLeft +=
+                    e.deltaY;
+            };
+
+        el.addEventListener(
             "wheel",
-            handleWheel
+            handleWheel,
+            { passive: false }
         );
+
+        return () => {
+            el.removeEventListener(
+                "wheel",
+                handleWheel
+            );
+        };
+    }, []);
+
+    /**
+     * 스크롤 영역 크기 확인
+     * (디버깅용 로그)
+     */
+    // useEffect(() => {
+    //     const el =
+    //         scrollRef.current;
+
+    //     if (!el) return;
+
+    //     console.log(
+    //         "scrollWidth:",
+    //         el.scrollWidth
+    //     );
+
+    //     console.log(
+    //         "clientWidth:",
+    //         el.clientWidth
+    //     );
+    // }, []);
+
+    /**
+     * 현재 lecture 변경 시
+     * 해당 슬롯으로 자동 이동
+     */
+    useEffect(() => {
+        const index =
+            currentLectureIndex - 1;
+
+        scrollToIndex(index);
+
+    }, [
+        currentLectureIndex,
+        scrollToIndex,
+    ]);
+
+    const scrollBy = (dir) => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const targetWidth = el.children[0]?.clientWidth ?? 100;
+
+        el.scrollBy({
+            left: dir * (targetWidth + 10),
+            behavior: "smooth",
+        });
     };
-}, []);
-
-/**
- * 스크롤 영역 크기 확인
- * (디버깅용 로그)
- */
-// useEffect(() => {
-//     const el =
-//         scrollRef.current;
-
-//     if (!el) return;
-
-//     console.log(
-//         "scrollWidth:",
-//         el.scrollWidth
-//     );
-
-//     console.log(
-//         "clientWidth:",
-//         el.clientWidth
-//     );
-// }, []);
-
-/**
- * 현재 lecture 변경 시
- * 해당 슬롯으로 자동 이동
- */
-useEffect(() => {
-    const index =
-        currentLectureIndex - 1;
-
-    scrollToIndex(index);
-
-}, [
-    currentLectureIndex,
-    scrollToIndex,
-]);
-
-const scrollBy = (dir) => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const targetWidth = el.children[0]?.clientWidth ?? 100;
-
-    el.scrollBy({
-        left: dir * (targetWidth + 10),
-        behavior: "smooth",
-    });
-};
 
 
     return (
@@ -193,7 +201,7 @@ const scrollBy = (dir) => {
                             clearRollback();
                         }}
                     >
-                        확정 (ㆍ)
+                        ≡ ▪
                     </button>
                 )}
                 <button
@@ -223,8 +231,8 @@ const scrollBy = (dir) => {
                 >
                     {
                         isSort
-                        ? "정렬 취소"
-                        : "오름차순 정렬"
+                        ? "≡↺"
+                        : "≡▴"
                     }
                 </button>
             </div>
@@ -242,13 +250,32 @@ const scrollBy = (dir) => {
                                 const isActive =
                                 slot?.lecturePage ===
                                 `p${currentLectureIndex}`;
+                                // console.log(slot?.lecturePage, `p${currentLectureIndex}`);
+                                const slotActive =
+                                `PDFPageInfo ${isActive
+                                    ? "active"
+                                    : "notActive"
+                                }`
 
                                 const background =
                                     isActive
-                                        ? "#ffe66d"
+                                        ? slotActiveBackground
                                         : slot?.hasMemo
-                                        ? "#d8ecff"
-                                        : "#d9d9d9";
+                                        ? slotMemoBackground
+                                        : slotBackground;
+
+                                const ActiveBorder =
+                                    isActive
+                                        ? slotBorder_A
+                                        : slotBorder;
+                                const ActiveColor =
+                                    isActive
+                                        ? slotColor_A
+                                        : slotColor;
+                                const ActiveShadow =
+                                    isActive
+                                        ? slotShadow_A
+                                        : "none";
 
                                 return (
                                     <NavigationSlot
@@ -256,8 +283,12 @@ const scrollBy = (dir) => {
                                             "--slot-width": `clamp(60px, 10vw, 90px)`,
                                             "--slot-ratio": "1 / 1.5",
                                             "--slot--bg": background,
+                                            "--slot--bd": ActiveBorder,
+                                            "--box-shadow" :ActiveShadow,
                                         }}
+                                        isActive={isActive}
                                         isPending={isPending}
+                                        isPDFActive={true}
                                         key={index}
                                         disabled={!slot}
                                         onClick={() =>
@@ -305,14 +336,19 @@ const scrollBy = (dir) => {
                                     >
                                         {slot && (
                                             <>
-                                                <div>
+                                            <div className="PDFPreview" style={{"--slot-color":textColor, "--slot-border":slotBorder, background : "#ffffff77"}}>
+                                                {/* pdf 미리보기 */}
+                                            </div>
+                                            <div className={slotActive} style={{"--slot-color":ActiveColor,}}>
+                                                <div style={{"--slot-border":ActiveBorder, "--slot-color":ActiveColor,}}>
                                                     { slot.lecturePage }
                                                 </div>
 
-                                                <div style={{ fontSize: 12, }} >
+                                                <div className="noteCount"s style={{ "--slot-border":ActiveBorder,}} >
                                                     { slot.noteCount }
                                                     page
                                                 </div>
+                                            </div >
                                             </>
                                         )}
                                     </NavigationSlot>

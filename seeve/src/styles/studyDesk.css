@@ -5,13 +5,17 @@
     font-family: "mulmaru";
     src: url(../assets/Fonts/Mulmaru.ttf) format("truetype");
 }
+@font-face {
+    font-family: "PretendardVariable";
+    src: url(../assets/Fonts/PretendardVariable.ttf);
+}
 /* =========================
    CSS Reset / Init Style
 ========================= */
 
 *,
 *::before,
-*::after {
+*::after {    
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -55,7 +59,7 @@ button {
 /* body 기본 설정 */
 body {
     line-height: 1;
-    font-family: sans-serif;
+    font-family: "PretendardVariable";
     color: #222;
 }
 
@@ -85,7 +89,6 @@ table {
 
     
 }
-
 .flexContainer{
     display: flex;
     flex-direction: column;
@@ -102,14 +105,15 @@ table {
     border-bottom: 1px solid #222;
     margin-bottom: 10px;
     height : 45px;
+    min-height: 45px;
     color : var(--header-color);
     gap : 10px;
     align-items : center; /*세로축*/
     /* align-content :center; */
     justify-content: flex-start;
 }
-.areaHeader>.headerText{
-    font-family: "mulmaru";
+* .areaHeader>.headerText{
+    font-family: "mulmaru", sans-serif !important;
     letter-spacing: 1px;
     position: relative;
     display: inline-block;
@@ -169,7 +173,7 @@ table {
    button 공통
 =========================== */
 #flexWrap button{
-    width: 140px;
+    width: 50px;
     cursor: pointer;
 }
 #flexWrap button, .pageCount{
@@ -238,6 +242,7 @@ table {
     align-items: center;
     gap: 8px;
     width: 100%;
+    margin-bottom: 20px;
 }
 
 /* 좌우 버튼 */
@@ -256,7 +261,7 @@ table {
     gap: 10px;
 
     width: 100%;
-    min-width: 0;     /* ⭐ flex overflow 방지 핵심 */
+    min-width: 0;
     /* width: calc((100% - 50px) / 5);; */
     overflow-x: scroll; /* 또는 auto */
     
@@ -273,6 +278,9 @@ table {
 
     margin-bottom: 8px;
 }
+#flexWrap .n button{
+    width: 70px;
+}
 
 /* slot 공통 양식 */
 .noteSlot .slot, .professorSlot .slot{
@@ -282,11 +290,15 @@ table {
     width: var(--slot-width);
     height: var(--slot-height);
     aspect-ratio: var(--slot-ratio);
-    border: 1px solid gray;
-    border-radius: 12px;
+    border: var(--slot--bd);
+    border-radius: 8%;
+
+    color:var(--slot-color);
 
     display: flex;
     flex-direction: column;
+
+    padding: 0px 15px;
 
     justify-content: center;
     align-items: center;
@@ -295,9 +307,12 @@ table {
 
     cursor: pointer;
 
-    transition: 0.3s;
+    transition: 0.8s;
 
     scroll-snap-align: center;
+
+    box-shadow: var(--box-shadow);
+
 }
 
 .slot.disabled{
@@ -306,7 +321,8 @@ table {
 }
 
 .slot.active{
-    background: #ddd;
+    /* background: #d8ecff;
+    border-color: #28435a; */
 }
 
 .slot.isPending{
@@ -316,6 +332,54 @@ table {
 
 .slot.dragOver{
     opacity: 0.45;
+}
+
+.slot .PDFPreview{
+    text-align: center;
+    /* border: var(--slot-border); */
+    color : var(--slot-color);
+    width: 100%;
+    aspect-ratio: 1/1.414;
+    border-radius: 8%;
+
+    margin-bottom: 5px;
+}
+
+.slot .PDFPageInfo{
+    width: 100%;
+    display : flex;
+    position: relative;
+    text-align: center;
+
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+
+    font-size : 12px;
+    font-weight: bold;
+    color : var(--slot-color);
+}
+
+.slot .PDFPageInfo.active::after{
+    content: "●";
+    font-size: 0.5rem;
+    position: absolute;
+    width: 100%;
+    transform: translateY(16px);
+    text-shadow:
+        2px 0 2px rgba(245, 245, 245, 0.5),
+        -2px 0 2px rgba(245, 245, 245, 0.5),
+        0 2px 2px rgba(245, 245, 245, 0.5),
+        0 -2px 2px rgba(245, 245, 245, 0.5);
+}
+
+.slot .noteCount{
+    background: var();
+    padding: 2px 4px;
+    border: var(--slot-border);
+    /* color : var(--slot-color); */
+    border-radius: 12px;
+    font-size: 8px;
 }
 
 /* noteEditor */

@@ -133,7 +133,7 @@ function StudyDeskPage() {
 
             <div id="flexWrap">
                 {/* 교수 자료 */}
-                <div className="flexContainer"
+                <div className="flexContainer p"
                     style={{
                         "--wrap-children" : c_background,
                     }}
@@ -157,7 +157,7 @@ function StudyDeskPage() {
                 </div>
 
                 {/* 학습 노트 */}
-                <div className="flexContainer"
+                <div className="flexContainer n"
                     style={{
                         "--wrap-children" : c_background,
                     }}

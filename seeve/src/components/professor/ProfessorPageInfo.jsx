@@ -7,7 +7,7 @@ function ProfessorPageInfo({
             <div id="ProfessorPageInfo"
                 
             >
-                현재 {currentLectureIndex} /{" "}
+                p {currentLectureIndex} /{" "}
                 {lectureCount}
             </div>
         </>

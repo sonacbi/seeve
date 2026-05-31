@@ -63,7 +63,7 @@ const {
                         } else { addPage( currentNote.lecturePage ) }
                     } } >
 
-                    { isDelete || isReset ? "확정 (ㆍ)" : "메모 추가 (+)" }
+                    { isDelete || isReset ? "확정" : "메모 +" }
                     
                 </button>
 
@@ -81,7 +81,7 @@ const {
                         deleteCurrentPage();
                     }}
                 >
-                    { isDelete ? "삭제 취소" : "현재 페이지 삭제" }
+                    { isDelete ? "삭제↺" : "삭제" }
                 </button>
 
                 <button
@@ -98,7 +98,7 @@ const {
                         resetCurrentPage();
                     }}
                 >
-                    { isReset ? "초기화 취소" : "현재 페이지 초기화" }
+                    { isReset ? "초기화↺" : "초기화" }
                 </button>
             </div>
 

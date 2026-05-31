@@ -4,6 +4,9 @@ import NavigationSlot from "../common/NavigationSlot";
 import useStudyDesk from "../../hooks/useStudyDesk";
 
 function NoteNavigator({
+    isDark,
+    colorPalette,
+
     flattenedNotes,
     // setCurrentNoteIndex,
     setCurrentNoteId,
@@ -19,6 +22,11 @@ function NoteNavigator({
 
     mode,
 }) {
+
+const { noteBorder, noteBorder_A, noteColor, noteColor_A,
+/*slotShadow,*/ noteShadow_A, noteGround, slotBackground
+} = colorPalette(!isDark);
+
 const {
     // isDelete, isReset, isSort,
     isPending,
@@ -62,13 +70,39 @@ const {
                         currentLectureNotes[
                         index
                         ];
+                        const isActive = page?.id === currentNote?.id
+console.log(
+    page?.id,
+    currentNote?.id,
+    page?.id === currentNote?.id
+);
+                                const background =
+                                    isActive
+                                        ? noteGround
+                                        : slotBackground;
 
+                                const ActiveBorder =
+                                    isActive
+                                        ? noteBorder_A
+                                        : noteBorder;
+                                const ActiveColor =
+                                    isActive
+                                        ? noteColor_A
+                                        : noteColor;
+                                const ActiveShadow =
+                                    isActive
+                                        ? noteShadow_A
+                                        : "none";
                     return (
                         <NavigationSlot
                             key={index}
                             style={{
                                 "--slot-width": "60px",
                                 "--slot-height": "60px",
+                                "--slot--bg": background,
+                                "--slot--bd": ActiveBorder,
+                                "--box-shadow" :ActiveShadow,
+                                "--slot-color":ActiveColor,
                             }}
                             disabled={!page}
                             isPending={isPending}
