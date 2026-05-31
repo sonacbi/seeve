@@ -118,7 +118,7 @@ const {
                 marginTop: 20,
             }}
             >
-            <div className="noteButtonGroup">
+            <div className="noteButtonGroup bottomNarrow">
                 <button onClick={()=>{
                     if(isPending){ withRollback({ action: goPrev, context: { setNotePages, setCurrentNoteId, }, })
                         }else{ goPrev();}

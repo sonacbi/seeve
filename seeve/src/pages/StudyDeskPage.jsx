@@ -163,7 +163,7 @@ function StudyDeskPage() {
                     }}
                 >
 
-                    <NotePanel
+                <NotePanel
                     currentLectureIndex={currentLectureIndex}
                     lectureCount={lectureCount}
                     currentNote={currentNote}

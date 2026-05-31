@@ -71,11 +71,11 @@ const {
                         index
                         ];
                         const isActive = page?.id === currentNote?.id
-console.log(
-    page?.id,
-    currentNote?.id,
-    page?.id === currentNote?.id
-);
+                        // console.log(
+                        //     page?.id,
+                        //     currentNote?.id,
+                        //     page?.id === currentNote?.id
+                        // );
                                 const background =
                                     isActive
                                         ? noteGround

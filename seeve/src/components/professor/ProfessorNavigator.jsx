@@ -142,27 +142,6 @@ function ProfessorNavigator({
     }, []);
 
     /**
-     * 스크롤 영역 크기 확인
-     * (디버깅용 로그)
-     */
-    // useEffect(() => {
-    //     const el =
-    //         scrollRef.current;
-
-    //     if (!el) return;
-
-    //     console.log(
-    //         "scrollWidth:",
-    //         el.scrollWidth
-    //     );
-
-    //     console.log(
-    //         "clientWidth:",
-    //         el.clientWidth
-    //     );
-    // }, []);
-
-    /**
      * 현재 lecture 변경 시
      * 해당 슬롯으로 자동 이동
      */
@@ -235,6 +214,15 @@ function ProfessorNavigator({
                         : "≡▴"
                     }
                 </button>
+                {/* 활성화된 페이지번호 복사. 처음 복제시 p1 → p1(1), 연관된 노트도 p1(1)-1로 변경 p1(2), p1(3), p1(4)식으로 복제*/}
+                <button>
+                    ⫘
+                </button>
+                {/* 복사된 페이지만 사용가능. 중복체크를한다. 복제된 페이지 삭제 롤백기능 있어야함*/}
+                <button>
+                    ⨱
+                </button>
+                {/* 텍스트홀더로 nn까지 입력. 이라 적힌 텍스트필드. 최대값을 넘기면 자동으로 최대값으로 바꿔서 입력 활성화된 페이지를 바꾼다.  */}
             </div>
 
             {/* 교수 페이지 슬롯 */}

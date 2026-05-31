@@ -44,6 +44,9 @@ const colorPalette = (
                         0 0.3px ${slot_active},
                         0 -0.3px ${slot_active}`,
 
+            // professor pdfScreen 컬러
+            PDFScreenColor : !isDark ? "rgb(254, 246, 239)": "#d9d9d9", // 미선택
+
             // note 컬러
             noteGround : note_background,
             noteColor : slot_NotActive,
