@@ -1,3 +1,4 @@
+import { useState } from "react";
 import ProfessorNavigator from "./ProfessorNavigator";
 import ProfessorViewer from "./ProfessorViewer";
 
@@ -8,6 +9,7 @@ function ProfessorPanel(props) {
         lectureCount,
         isDark, colorPalette} = props;
     const {textColor, iconColor} = colorPalette(!isDark);
+    const [pdfThumbnails, setPdfThumbnails] = useState({});
 
     return (
         <>
@@ -21,12 +23,14 @@ function ProfessorPanel(props) {
             </h2>
 
             <ProfessorNavigator {...props}
+            pdfThumbnails={pdfThumbnails}
                 />
 
             <h1>
                 {/* {currentNote.lecturePage} */}
             </h1>
             <ProfessorViewer {...props}
+            setPdfThumbnails={setPdfThumbnails}
             />
         </>
     );

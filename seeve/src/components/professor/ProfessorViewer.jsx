@@ -13,6 +13,8 @@ function ProfessorViewer(props) {
         currentNoteId, professorOrder, mode,
         isDark, colorPalette,
         pdfFile, setLectureCount,
+
+        setPdfThumbnails,
     } =props;
     const {screenBoder} = colorPalette(!isDark);
     const pdfBackground = screenBoder;
@@ -402,7 +404,8 @@ function ProfessorViewer(props) {
                         ) : (
                                 <Document
                                     file={pdfFile}
-                                    onLoadSuccess={({ numPages }) => {
+                                    onLoadSuccess={async (pdf) => {
+                                        const { numPages } = pdf;
                                         console.log("PDF loaded:", numPages);
 
                                         setNumPages(numPages);
@@ -410,6 +413,48 @@ function ProfessorViewer(props) {
                                         if ( lectureCount !== numPages ) {
                                             setLectureCount( numPages );
                                         }
+                                        const thumbs = {};
+
+                                        for (
+                                            let pageNum = 1;
+                                            pageNum <= pdf.numPages;
+                                            pageNum++
+                                        ) {
+                                            const page =
+                                                await pdf.getPage(pageNum);
+
+                                            const viewport =
+                                                page.getViewport({
+                                                    scale: 0.15,
+                                                });
+
+                                            const canvas =
+                                                document.createElement("canvas");
+
+                                            const context =
+                                                canvas.getContext("2d");
+
+                                            canvas.width =
+                                                viewport.width;
+
+                                            canvas.height =
+                                                viewport.height;
+
+                                            await page.render({
+                                                canvasContext: context,
+                                                viewport,
+                                            }).promise;
+
+                                            thumbs[`p${pageNum}`] =
+                                                canvas.toDataURL(
+                                                    "image/jpeg",
+                                                    0.7
+                                                );
+                                        }
+
+                                        setPdfThumbnails(
+                                            thumbs
+                                        );
                                     }}
                                     onLoadError={(error) => {
                                         console.error(

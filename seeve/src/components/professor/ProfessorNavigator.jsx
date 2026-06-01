@@ -22,6 +22,8 @@ function ProfessorNavigator({
 
     mode,
     rollback,
+
+    pdfThumbnails,
 }) {
     const {textColor, slotBorder, slotBorder_A, slotColor, slotColor_A,
     /*slotShadow,*/ slotShadow_A,
@@ -456,8 +458,29 @@ function ProfessorNavigator({
                                     >
                                         {slot && (
                                             <>
-                                            <div className="PDFPreview" style={{"--slot-color":textColor, "--slot-border":slotBorder, background : "#ffffff77"}}>
-                                                {/* pdf 미리보기 */}
+                                            <div
+                                                className="PDFPreview"
+                                                style={{
+                                                    "--slot-color": textColor,
+                                                    "--slot-border": slotBorder,
+                                                    background: "#ffffff77",
+                                                }}
+                                            >
+                                                {pdfThumbnails?.[
+                                                    slot.lecturePage
+                                                ] && (
+                                                    <img
+                                                        src={
+                                                            pdfThumbnails[
+                                                                slot.lecturePage
+                                                            ]
+                                                        }
+                                                        alt={
+                                                            slot.lecturePage
+                                                        }
+                                                        draggable={false}
+                                                    />
+                                                )}
                                             </div>
                                             <div className={slotActive} style={{"--slot-color":ActiveColor,}}>
                                                 <div style={{"--slot-border":ActiveBorder, "--slot-color":ActiveColor,}}>
