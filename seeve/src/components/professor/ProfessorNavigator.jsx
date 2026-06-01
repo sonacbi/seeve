@@ -400,7 +400,7 @@ function ProfessorNavigator({
                                 return (
                                     <NavigationSlot
                                         style={{
-                                            "--slot-width": `clamp(60px, 10vw, 90px)`,
+                                            "--slot-width": "75px", //clamp(60px, 10vw, 90px) 취소
                                             "--slot-ratio": "1 / 1.5",
                                             "--slot--bg": background,
                                             "--slot--bd": ActiveBorder,
@@ -466,7 +466,7 @@ function ProfessorNavigator({
 
                                                 <div className="noteCount" style={{ "--slot-border":ActiveBorder,}} >
                                                     { slot.noteCount }
-                                                    page
+                                                    
                                                 </div>
                                             </div >
                                             </>
