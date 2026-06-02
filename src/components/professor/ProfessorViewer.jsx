@@ -102,6 +102,20 @@ function ProfessorViewer(props) {
         height: 1
     });
 
+    const widthScale = containerSize.width / pageSize.width;
+
+    const heightScale =
+        containerSize.height /
+        pageSize.height;
+
+    const baseScale =
+        fitMode === "width"
+            ? widthScale
+            : heightScale;
+
+    const renderScale =
+            baseScale * zoom;
+
     useEffect(() => {
         const container =
             pdfScreenRef.current;
@@ -115,17 +129,27 @@ function ProfessorViewer(props) {
 
             // ctrl + wheel => zoom
             if (e.ctrlKey) {
-                const delta =
-                    e.deltaY > 0
-                        ? -ZOOM_STEP
-                        : ZOOM_STEP;
+                const currentPercent =
+                    (renderScale / widthScale) * 100;
 
-                setZoom((prev) =>
+                const snappedPercent =
+                    Math.round(currentPercent / 10) * 10;
+
+                const nextPercent =
+                    e.deltaY < 0
+                        ? snappedPercent + 10
+                        : snappedPercent - 10;
+
+                const nextZoom =
+                    (nextPercent / 100) *
+                    (widthScale / baseScale);
+
+                setZoom(
                     Math.min(
                         MAX_ZOOM,
                         Math.max(
                             MIN_ZOOM,
-                            prev + delta
+                            nextZoom
                         )
                     )
                 );
@@ -152,7 +176,9 @@ function ProfessorViewer(props) {
                 handleWheel
             );
         };
-    }, []);
+    }, [renderScale,
+    widthScale,
+    baseScale]);
 
     useEffect(() => {
         const resizePdf = () => {
@@ -363,35 +389,6 @@ function ProfessorViewer(props) {
             </div>
         )
     }
-    const widthScale = containerSize.width / pageSize.width;
-
-    const heightScale =
-        containerSize.height /
-        pageSize.height;
-
-    const baseScale =
-        fitMode === "width"
-            ? widthScale
-            : heightScale;
-
-    const renderScale =
-            baseScale * zoom;
-            const changeFitMode = (nextMode) => {
-        const prevBase =
-            fitMode === "width" ? widthScale : heightScale;
-
-        const nextBase =
-            nextMode === "width" ? widthScale : heightScale;
-
-        // 현재 실제 화면 scale
-        const currentRealScale = prevBase * zoom;
-
-        // 새로운 zoom 재계산 (같은 실제 크기 유지)
-        const newZoom = currentRealScale / nextBase;
-
-        setFitMode(nextMode);
-        setZoom(newZoom);
-    };
     
     const zoomIn = () => {
         setZoom((prev) =>
@@ -461,7 +458,7 @@ function ProfessorViewer(props) {
                         </button>
 
                         <span>
-                            {Math.round(zoom * 100)}%
+                            {Math.round((renderScale / widthScale) * 100)}%
                         </span>
 
                         <button onClick={zoomIn}>
