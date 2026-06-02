@@ -176,13 +176,193 @@ function ProfessorViewer(props) {
                 resizePdf
             );
 
-        observer.observe(
-            pdfScreenRef.current
-        );
+        if(pdfScreenRef){observer.observe( pdfScreenRef.current );}
 
         return () =>
             observer.disconnect();
     }, []);
+
+    const renderPDF = (targetRef) => {
+        return(
+            <div
+                id="PDFScreen"
+                ref={targetRef}
+                style={{
+                    "--screen-bg": screenColor,
+                    "--window-view": windowView,
+                }}
+
+                onClick={(e) => {
+                    const container =
+                        targetRef.current;
+
+                    if (!container) return;
+
+                    const rect =
+                        container.getBoundingClientRect();
+
+                    const x =
+                        e.clientX - rect.left;
+
+                    const y =
+                        e.clientY - rect.top;
+
+                    const moveX =
+                        isPortrait
+                            ? rect.width * 0.15
+                            : rect.width * 0.3;
+
+                    const moveY =
+                        isPortrait
+                            ? rect.height * 0.3
+                            : rect.height * 0.15;
+
+                    // 좌우
+                    if (x < rect.width * 0.3) {
+                        container.scrollLeft -= moveX;
+                    }
+                    else if (
+                        x > rect.width * 0.7
+                    ) {
+                        container.scrollLeft += moveX;
+                    }
+
+                    // 상하
+                    if (y < rect.height * 0.3) {
+                        container.scrollTop -= moveY;
+                    }
+                    else if (
+                        y > rect.height * 0.7
+                    ) {
+                        container.scrollTop += moveY;
+                    }
+                }}
+                onContextMenu={async (e) => {
+                    e.preventDefault();
+
+                    try {
+                        const canvas =
+                            targetRef.current?.querySelector(
+                                "canvas"
+                            );
+
+                        if (!canvas) return;
+
+                        canvas.toBlob(
+                            async (blob) => {
+                                if (!blob) return;
+
+                                await navigator.clipboard.write([
+                                    new ClipboardItem({
+                                        [blob.type]:
+                                            blob
+                                    })
+                                ]);
+
+                                console.log(
+                                    "PDF 화면 복사 완료"
+                                );
+                            }
+                        );
+                    }
+                    catch (err) {
+                        console.error(
+                            "클립보드 복사 실패:",
+                            err
+                        );
+                    }
+                }}
+            >
+                {!pdfFile ? (
+                    <div>
+                        PDF를 선택하세요
+                    </div>
+                ) : (
+                        <Document
+                            file={pdfFile}
+                            onLoadSuccess={async (pdf) => {
+                                const { numPages } = pdf;
+                                console.log("PDF loaded:", numPages);
+
+                                setNumPages(numPages);
+
+                                if ( lectureCount !== numPages ) {
+                                    setLectureCount( numPages );
+                                }
+                                const thumbs = {};
+
+                                for (
+                                    let pageNum = 1;
+                                    pageNum <= pdf.numPages;
+                                    pageNum++
+                                ) {
+                                    const page =
+                                        await pdf.getPage(pageNum);
+
+                                    const viewport =
+                                        page.getViewport({
+                                            scale: 0.15,
+                                        });
+
+                                    const canvas =
+                                        document.createElement("canvas");
+
+                                    const context =
+                                        canvas.getContext("2d");
+
+                                    canvas.width =
+                                        viewport.width;
+
+                                    canvas.height =
+                                        viewport.height;
+
+                                    await page.render({
+                                        canvasContext: context,
+                                        viewport,
+                                    }).promise;
+
+                                    thumbs[`p${pageNum}`] =
+                                        canvas.toDataURL(
+                                            "image/jpeg",
+                                            0.7
+                                        );
+                                }
+
+                                setPdfThumbnails(
+                                    thumbs
+                                );
+                            }}
+                            onLoadError={(error) => {
+                                console.error(
+                                    "PDF load error:",
+                                    error
+                                );
+                            }}
+                            >
+                        <Page
+                            pageNumber={pageNumber}
+                            // width={pdfWidth}
+                            onLoadSuccess={(page) => {
+                                const viewport =
+                                    page.getViewport({ scale: 1 });
+
+                                    setPageSize({
+                                        width: viewport.width,
+                                        height: viewport.height
+                                    });
+                                    setWindowView(
+                                        viewport.height > viewport.width
+                                        ? "flex-start"
+                                        : "center"
+                                    );
+                                }}
+                            scale={renderScale}
+                        />
+                    </Document>
+                )}
+            </div>
+        )
+    }
     const widthScale =
         containerSize.width /
         pageSize.width;
@@ -308,184 +488,8 @@ function ProfessorViewer(props) {
                 </div>
 
                 <div className="pdfWindow">
-                    <div
-                        id="PDFScreen"
-                        ref={pdfScreenRef}
-                        style={{
-                            "--screen-bg": screenColor,
-                            "--window-view": windowView,
-                        }}
-
-                        onClick={(e) => {
-                            const container =
-                                pdfScreenRef.current;
-
-                            if (!container) return;
-
-                            const rect =
-                                container.getBoundingClientRect();
-
-                            const x =
-                                e.clientX - rect.left;
-
-                            const y =
-                                e.clientY - rect.top;
-
-                            const moveX =
-                                isPortrait
-                                    ? rect.width * 0.15
-                                    : rect.width * 0.3;
-
-                            const moveY =
-                                isPortrait
-                                    ? rect.height * 0.3
-                                    : rect.height * 0.15;
-
-                            // 좌우
-                            if (x < rect.width * 0.3) {
-                                container.scrollLeft -= moveX;
-                            }
-                            else if (
-                                x > rect.width * 0.7
-                            ) {
-                                container.scrollLeft += moveX;
-                            }
-
-                            // 상하
-                            if (y < rect.height * 0.3) {
-                                container.scrollTop -= moveY;
-                            }
-                            else if (
-                                y > rect.height * 0.7
-                            ) {
-                                container.scrollTop += moveY;
-                            }
-                        }}
-                        onContextMenu={async (e) => {
-                            e.preventDefault();
-
-                            try {
-                                const canvas =
-                                    pdfScreenRef.current?.querySelector(
-                                        "canvas"
-                                    );
-
-                                if (!canvas) return;
-
-                                canvas.toBlob(
-                                    async (blob) => {
-                                        if (!blob) return;
-
-                                        await navigator.clipboard.write([
-                                            new ClipboardItem({
-                                                [blob.type]:
-                                                    blob
-                                            })
-                                        ]);
-
-                                        console.log(
-                                            "PDF 화면 복사 완료"
-                                        );
-                                    }
-                                );
-                            }
-                            catch (err) {
-                                console.error(
-                                    "클립보드 복사 실패:",
-                                    err
-                                );
-                            }
-                        }}
-                    >
-                        {!pdfFile ? (
-                            <div>
-                                PDF를 선택하세요
-                            </div>
-                        ) : (
-                                <Document
-                                    file={pdfFile}
-                                    onLoadSuccess={async (pdf) => {
-                                        const { numPages } = pdf;
-                                        console.log("PDF loaded:", numPages);
-
-                                        setNumPages(numPages);
-
-                                        if ( lectureCount !== numPages ) {
-                                            setLectureCount( numPages );
-                                        }
-                                        const thumbs = {};
-
-                                        for (
-                                            let pageNum = 1;
-                                            pageNum <= pdf.numPages;
-                                            pageNum++
-                                        ) {
-                                            const page =
-                                                await pdf.getPage(pageNum);
-
-                                            const viewport =
-                                                page.getViewport({
-                                                    scale: 0.15,
-                                                });
-
-                                            const canvas =
-                                                document.createElement("canvas");
-
-                                            const context =
-                                                canvas.getContext("2d");
-
-                                            canvas.width =
-                                                viewport.width;
-
-                                            canvas.height =
-                                                viewport.height;
-
-                                            await page.render({
-                                                canvasContext: context,
-                                                viewport,
-                                            }).promise;
-
-                                            thumbs[`p${pageNum}`] =
-                                                canvas.toDataURL(
-                                                    "image/jpeg",
-                                                    0.7
-                                                );
-                                        }
-
-                                        setPdfThumbnails(
-                                            thumbs
-                                        );
-                                    }}
-                                    onLoadError={(error) => {
-                                        console.error(
-                                            "PDF load error:",
-                                            error
-                                        );
-                                    }}
-                                    >
-                                <Page
-                                    pageNumber={pageNumber}
-                                    // width={pdfWidth}
-                                    onLoadSuccess={(page) => {
-                                        const viewport =
-                                            page.getViewport({ scale: 1 });
-
-                                            setPageSize({
-                                                width: viewport.width,
-                                                height: viewport.height
-                                            });
-                                            setWindowView(
-                                                viewport.height > viewport.width
-                                                ? "flex-start"
-                                                : "center"
-                                            );
-                                        }}
-                                    scale={renderScale}
-                                />
-                            </Document>
-                        )}
-                    </div>
-            </div>
+                    {renderPDF(pdfScreenRef)}
+                </div>
 
             </div>
                 <div className="professorButtonGroup bottomNarrow">
