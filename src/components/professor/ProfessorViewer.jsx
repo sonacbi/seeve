@@ -363,9 +363,7 @@ function ProfessorViewer(props) {
             </div>
         )
     }
-    const widthScale =
-        containerSize.width /
-        pageSize.width;
+    const widthScale = containerSize.width / pageSize.width;
 
     const heightScale =
         containerSize.height /
@@ -377,8 +375,23 @@ function ProfessorViewer(props) {
             : heightScale;
 
     const renderScale =
-        baseScale * zoom;
-            
+            baseScale * zoom;
+            const changeFitMode = (nextMode) => {
+        const prevBase =
+            fitMode === "width" ? widthScale : heightScale;
+
+        const nextBase =
+            nextMode === "width" ? widthScale : heightScale;
+
+        // 현재 실제 화면 scale
+        const currentRealScale = prevBase * zoom;
+
+        // 새로운 zoom 재계산 (같은 실제 크기 유지)
+        const newZoom = currentRealScale / nextBase;
+
+        setFitMode(nextMode);
+        setZoom(newZoom);
+    };
     
     const zoomIn = () => {
         setZoom((prev) =>
@@ -457,13 +470,13 @@ function ProfessorViewer(props) {
                     </div>
                     <div className="professorButtonGroup">
                         <button className="fit2width"
-                            onClick={() => setFitMode("width") }
+                            onClick={() => {setFitMode("width"); setZoom(1);} }
                         >
                             ⇔
                         </button>
 
                         <button className="fit2height"
-                            onClick={() => setFitMode("height") }
+                            onClick={() => {setFitMode("height"); setZoom(1);} }
                         >
                             ⇕
                         </button>
