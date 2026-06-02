@@ -2,7 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Document, Page } from "react-pdf";
 import { pdfjs } from "react-pdf";
 
-import ProfessorPageInfo from "./ProfessorPageInfo";
+
+import ProfessorToolbar from "./ProfessorToolbar";
+import useProfessorPdf from "../../../hooks/useProfessorPdf";
+import ViewerNavigator from "./ViewerNavigator";
+import FullscreenPdfViewer from "./FullscreenPdfViewer";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
     `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -16,6 +20,7 @@ function ProfessorViewer(props) {
 
         setPdfThumbnails,
     } =props;
+
     const {screenBoder} = colorPalette(!isDark);
     const pdfBackground = screenBoder;
     const moveProfessorPage = (lecturePage) => {
@@ -26,7 +31,15 @@ function ProfessorViewer(props) {
 
         setCurrentNoteId(firstNote.id);
     };
-// console.log(document.querySelectorAll( ".react-pdf__Page" ).length);
+
+    const {pdfScreenRef, fullscreenRef,
+            numPages, setNumPages,
+            pageSize, setPageSize,
+            containerSize, setContainerSize,
+            zoom, setZoom,
+            fitMode, setFitMode,
+            isFullscreen, setIsFullscreen,
+            windowView, setWindowView,} = useProfessorPdf();
 
     const {
         // isDelete, isDeleteP, isReset, isSort,
@@ -50,59 +63,21 @@ function ProfessorViewer(props) {
             currentProfessorPage
             );
     
-    // const goPrevLecture = () => {
-    //     if (currentLectureIndex <= 1) return;
-
-    //     moveProfessorPage(
-    //         `p${currentLectureIndex - 1}`
-    //     );
-    // };
-
-    // const goNextLecture = () => {
-    //     if (currentLectureIndex >= lectureCount) return;
-
-    //     moveProfessorPage(
-    //         `p${currentLectureIndex + 1}`
-    //     );
-    // };
-    // const [pageNumber,
-    //     setPageNumber] =
-    //     useState(1);
-    const [numPages,
-        setNumPages] =
-        useState(null);
+    
     const pageNumber =
         Math.min(
             currentLectureIndex,
             numPages ?? 1
         );
-        
-    const pdfScreenRef =
-        useRef(null);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-
-    const fullscreenRef = useRef(null);
-
-    const [pageSize, setPageSize] =
-    useState({ width: 1, height: 1 });
-    const isPortrait = pageSize.height > pageSize.width;
-    const [zoom, setZoom] = useState(1);
-    const [fitMode, setFitMode] = useState("width");
     
-    const [windowView, setWindowView] = useState("center"); // 세로형 pdf는 flex-start
-    // width | height
+    
+    const isPortrait = pageSize.height > pageSize.width;
 
     const [scrollPos, setScrollPos] = useState({ x: 0,  });
 
     const ZOOM_STEP = 0.1;
     const MIN_ZOOM = 0.5;
     const MAX_ZOOM = 5;
-    const [containerSize,
-    setContainerSize] =
-    useState({
-        width: 1,
-        height: 1
-    });
 
     const widthScale = containerSize.width / pageSize.width;
 
@@ -456,59 +431,20 @@ function ProfessorViewer(props) {
     const screenColor = PDFScreenColor;
     return (
         <>
-
-
             <div id="ProfessorViewer" style={{"--professor-bd" : pdfBackground}} >
-                <div id="ProfessorEditNavi">
-                    <ProfessorPageInfo currentLectureIndex={ props.currentLectureIndex } lectureCount={ props.lectureCount } />
-                    <div className="spacer"></div>
-                    {/* pdf 영역 확대축소 버튼 */}
-                    <div className="professorButtonGroup">
-                        <button onClick={zoomOut}>
-                            -
-                        </button>
-
-                        <span>
-                            {Math.round((renderScale / widthScale) * 100)}%
-                        </span>
-
-                        <button onClick={zoomIn}>
-                            +
-                        </button>
-                    </div>
-                    <div className="professorButtonGroup">
-                        <button className="fit2width"
-                            onClick={() => {setFitMode("width"); setZoom(1);} }
-                        >
-                            ⇔
-                        </button>
-
-                        <button className="fit2height"
-                            onClick={() => {setFitMode("height"); setZoom(1);} }
-                        >
-                            ⇕
-                        </button>
-                    </div>
-                    <div className="professorButtonGroup">
-                        <button style={{background:"transparent", width:"18px"}}>
-                            <div className="ContentLogo" >
-                                {Array.from({ length: 6 }).map((_, i) => ( <div key={i}></div> ))}
-                            </div>
-                        </button>
-                        <button style={{background:"transparent", width:"18px"}}
-                        onClick={() => setIsFullscreen(true) }>
-                            <div className="fullScreenLogo">
-                                {Array.from({ length: 9 }).map((_, i) => ( <div key={i}></div> ))}
-                            </div>
-                        </button>
-                        <button style={{background:"transparent", width:"18px"}}>
-                            <div className="additionalInfo">
-                                {Array.from({ length: 3 }).map((_, i) => ( <div key={i}></div> ))}
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
+                <ProfessorToolbar
+                    showPageInfo = {true}
+                    showFullscreenButton = {true}
+                    zoomIn = {zoomIn}
+                    zoomOut = {zoomOut}
+                    renderScale = {renderScale}
+                    widthScale = {widthScale}
+                    setFitMode = {setFitMode}
+                    setZoom = {setZoom}
+                    setIsFullscreen = {setIsFullscreen}
+                    currentLectureIndex = {currentLectureIndex}
+                    lectureCount = {lectureCount}
+                />                
                 {!isFullscreen && (
                     <div className="pdfWindow">
                         {renderPDF(pdfScreenRef)}
@@ -516,111 +452,29 @@ function ProfessorViewer(props) {
                 )}
 
             </div>
-                <div className="professorButtonGroup bottomNarrow">
+            < ViewerNavigator
+                currentProfessorIndex = {currentProfessorIndex}
+                professorOrder = {professorOrder}
+                currentProfessorPage = {currentProfessorPage}
+                lectureCount = {lectureCount}
+                goPrevLecture = {goPrevLecture}
+                goNextLecture = {goNextLecture}
+                isPending = {isPending}
+            />
+        
 
-                    <button
-                        disabled={
-                            (currentProfessorIndex <= 0) || isPending
-                        }
-                        onClick={goPrevLecture}
-                    >
-                        ◀ {
-                            professorOrder[
-                                currentProfessorIndex - 1
-                            ]
-                        }
-                    </button>
-
-                    <span>
-                        {currentProfessorPage}
-                        {" / "}
-                        {lectureCount}
-                    </span>
-
-                    <button
-                        disabled={
-                            (currentProfessorIndex >=
-                            professorOrder.length - 1)
-                            || isPending
-                        }
-                        onClick={goNextLecture}
-                    >
-                        {
-                            professorOrder[
-                                currentProfessorIndex + 1
-                            ]
-                        } ▶
-                    </button>
-                        
-
-
-        </div>
-        {isFullscreen && (
-            <div
-                className="fullscreenOverlay"
-                onClick={() =>
-                    setIsFullscreen(false)
-                }
-                onWheel={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }}
-            >
-                <div
-                    className="fullscreenModal"
-                    onClick={(e) =>
-                        e.stopPropagation()
-                    }
-                >
-                    <div className="fullscreenToolbar">
-                        <button onClick={zoomOut}>
-                            -
-                        </button>
-
-                        <span>
-                            {Math.round(
-                                (renderScale / widthScale) * 100
-                            )}%
-                        </span>
-
-                        <button onClick={zoomIn}>
-                            +
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setFitMode("width");
-                                setZoom(1);
-                            }}
-                        >
-                            ⇔
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                setFitMode("height");
-                                setZoom(1);
-                            }}
-                        >
-                            ⇕
-                        </button>
-
-                    <button
-                        className="fullscreenClose"
-                        onClick={() =>
-                            setIsFullscreen(false)
-                        }
-                    >
-                        ✕
-                    </button>
-                    </div>
-
-                    <div className="fullscreenPDF">
-                        {renderPDF(fullscreenRef)}
-                    </div>
-                </div>
-            </div>
-        )}
+            <FullscreenPdfViewer 
+                isFullscreen = {isFullscreen}
+                setIsFullscreen = {setIsFullscreen}
+                renderScale = {renderScale}
+                widthScale = {widthScale}
+                zoomOut = {zoomOut}
+                zoomIn = {zoomIn}
+                setFitMode = {setFitMode}
+                setZoom = {setZoom}
+                fullscreenRef = {fullscreenRef}
+                renderPDF = {renderPDF}
+            />
         </>
     );
 }

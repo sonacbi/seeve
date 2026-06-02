@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ProfessorNavigator from "./ProfessorNavigator";
-import ProfessorViewer from "./ProfessorViewer";
+import ProfessorViewer from "./viewer/ProfessorViewer";
 
 import { ReactComponent as FireCandle } from "../../icon/fire_candle.svg";
 
