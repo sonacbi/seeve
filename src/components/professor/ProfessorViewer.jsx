@@ -79,6 +79,9 @@ function ProfessorViewer(props) {
         
     const pdfScreenRef =
         useRef(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const fullscreenRef = useRef(null);
 
     const [pageSize, setPageSize] =
     useState({ width: 1, height: 1 });
@@ -88,7 +91,6 @@ function ProfessorViewer(props) {
     
     const [windowView, setWindowView] = useState("center"); // 세로형 pdf는 flex-start
     // width | height
-    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const [scrollPos, setScrollPos] = useState({ x: 0,  });
 
@@ -118,7 +120,9 @@ function ProfessorViewer(props) {
 
     useEffect(() => {
         const container =
-            pdfScreenRef.current;
+            isFullscreen
+                ? fullscreenRef.current
+                : pdfScreenRef.current;
 
         if (!container) return;
 
@@ -176,14 +180,14 @@ function ProfessorViewer(props) {
                 handleWheel
             );
         };
-    }, [renderScale,
-    widthScale,
-    baseScale]);
+    }, [renderScale, widthScale, baseScale, isFullscreen ] );
 
     useEffect(() => {
         const resizePdf = () => {
             const container =
-                pdfScreenRef.current;
+            isFullscreen
+                ? fullscreenRef.current
+                : pdfScreenRef.current;
 
             if (!container) return;
 
@@ -202,11 +206,18 @@ function ProfessorViewer(props) {
                 resizePdf
             );
 
-        if(pdfScreenRef){observer.observe( pdfScreenRef.current );}
+        const container =
+            isFullscreen
+                ? fullscreenRef.current
+                : pdfScreenRef.current;
+
+        if (container) {
+            observer.observe(container);
+        }
 
         return () =>
             observer.disconnect();
-    }, []);
+    }, [isFullscreen]);
 
     const renderPDF = (targetRef) => {
         return(
@@ -484,7 +495,8 @@ function ProfessorViewer(props) {
                                 {Array.from({ length: 6 }).map((_, i) => ( <div key={i}></div> ))}
                             </div>
                         </button>
-                        <button style={{background:"transparent", width:"18px"}}>
+                        <button style={{background:"transparent", width:"18px"}}
+                        onClick={() => setIsFullscreen(true) }>
                             <div className="fullScreenLogo">
                                 {Array.from({ length: 9 }).map((_, i) => ( <div key={i}></div> ))}
                             </div>
@@ -497,9 +509,11 @@ function ProfessorViewer(props) {
                     </div>
                 </div>
 
-                <div className="pdfWindow">
-                    {renderPDF(pdfScreenRef)}
-                </div>
+                {!isFullscreen && (
+                    <div className="pdfWindow">
+                        {renderPDF(pdfScreenRef)}
+                    </div>
+                )}
 
             </div>
                 <div className="professorButtonGroup bottomNarrow">
@@ -541,6 +555,72 @@ function ProfessorViewer(props) {
 
 
         </div>
+        {isFullscreen && (
+            <div
+                className="fullscreenOverlay"
+                onClick={() =>
+                    setIsFullscreen(false)
+                }
+                onWheel={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+            >
+                <div
+                    className="fullscreenModal"
+                    onClick={(e) =>
+                        e.stopPropagation()
+                    }
+                >
+                    <div className="fullscreenToolbar">
+                        <button onClick={zoomOut}>
+                            -
+                        </button>
+
+                        <span>
+                            {Math.round(
+                                (renderScale / widthScale) * 100
+                            )}%
+                        </span>
+
+                        <button onClick={zoomIn}>
+                            +
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setFitMode("width");
+                                setZoom(1);
+                            }}
+                        >
+                            ⇔
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                setFitMode("height");
+                                setZoom(1);
+                            }}
+                        >
+                            ⇕
+                        </button>
+
+                    <button
+                        className="fullscreenClose"
+                        onClick={() =>
+                            setIsFullscreen(false)
+                        }
+                    >
+                        ✕
+                    </button>
+                    </div>
+
+                    <div className="fullscreenPDF">
+                        {renderPDF(fullscreenRef)}
+                    </div>
+                </div>
+            </div>
+        )}
         </>
     );
 }
