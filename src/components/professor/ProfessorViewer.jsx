@@ -77,18 +77,27 @@ function ProfessorViewer(props) {
             numPages ?? 1
         );
         
-    const pdfScreenRef =
-        useRef(null);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const pdfScreenRef = useRef(null);
+    const fullscreenRef = useRef(null);
+
+    // const getCurrentContainer = () =>
+    // isFullscreen
+    //     ? fullscreenRef.current
+    //     : pdfScreenRef.current;
+    //------------------------------ //
 
     const [pageSize, setPageSize] =
     useState({ width: 1, height: 1 });
-    const isPortrait = pageSize.height > pageSize.width;
+    // const isPortrait = pageSize.height > pageSize.width;
     const [zoom, setZoom] = useState(1);
     const [fitMode, setFitMode] = useState("width");
     
     const [windowView, setWindowView] = useState("center"); // 세로형 pdf는 flex-start
     // width | height
-    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const [pdfOrientation, setPdfOrientation] = useState(null);
+    useEffect(() => { setPdfOrientation(null); }, [pdfFile]); // pdf파일 바뀔 때 초기화용
 
     const [scrollPos, setScrollPos] = useState({ x: 0,  });
 
@@ -102,62 +111,72 @@ function ProfessorViewer(props) {
         height: 1
     });
 
-    useEffect(() => {
-        const container =
-            pdfScreenRef.current;
+    const attachWheelHandler =
+        (container) => {
+            if (!container) return;
 
-        if (!container) return;
+            const handleWheel = (e) => {
+                // 브라우저 확대/부모 스크롤 차단
+                e.preventDefault();
+                e.stopPropagation();
 
-        const handleWheel = (e) => {
-            // 브라우저 확대/부모 스크롤 차단
-            e.preventDefault();
-            e.stopPropagation();
+                // ctrl + wheel => zoom
+                if (e.ctrlKey) {
+                    const delta =
+                        e.deltaY > 0
+                            ? -ZOOM_STEP
+                            : ZOOM_STEP;
 
-            // ctrl + wheel => zoom
-            if (e.ctrlKey) {
-                const delta =
-                    e.deltaY > 0
-                        ? -ZOOM_STEP
-                        : ZOOM_STEP;
-
-                setZoom((prev) =>
-                    Math.min(
-                        MAX_ZOOM,
-                        Math.max(
-                            MIN_ZOOM,
-                            prev + delta
+                    setZoom((prev) =>
+                        Math.min(
+                            MAX_ZOOM,
+                            Math.max(
+                                MIN_ZOOM,
+                                prev + delta
+                            )
                         )
-                    )
-                );
+                    );
 
-                return;
-            }
+                    return;
+                }
 
-            // 일반 wheel => 세로 스크롤
-            container.scrollTop +=
-                e.deltaY;
-        };
+                // 일반 wheel => 세로 스크롤
+                container.scrollTop +=
+                    e.deltaY;
+            };
 
-        container.addEventListener(
-            "wheel",
-            handleWheel,
-            {
-                passive: false
-            }
-        );
-
-        return () => {
-            container.removeEventListener(
+            container.addEventListener(
                 "wheel",
-                handleWheel
+                handleWheel,
+                { passive:false }
             );
+
+            return () =>
+                container.removeEventListener(
+                    "wheel",
+                    handleWheel
+                );
         };
+
+        useEffect(() => {
+        return attachWheelHandler(
+            pdfScreenRef.current
+        );
     }, []);
 
     useEffect(() => {
+        if (!isFullscreen)
+            return;
+
+        return attachWheelHandler(
+            fullscreenRef.current
+        );
+    }, [isFullscreen]);
+
+    useEffect(() => {
         const resizePdf = () => {
-            const container =
-                pdfScreenRef.current;
+            const container = isFullscreen ?
+                fullscreenRef.current : pdfScreenRef.current;
 
             if (!container) return;
 
@@ -172,17 +191,16 @@ function ProfessorViewer(props) {
         resizePdf();
 
         const observer =
-            new ResizeObserver(
-                resizePdf
-            );
+            new ResizeObserver(resizePdf);
 
-        observer.observe(
-            pdfScreenRef.current
-        );
+            const container = isFullscreen ?
+                fullscreenRef.current : pdfScreenRef.current;
+        if (container) { observer.observe(container); } // 터짐방지
 
         return () =>
             observer.disconnect();
-    }, []);
+    }, [isFullscreen]);
+
     const widthScale =
         containerSize.width /
         pageSize.width;
@@ -199,7 +217,200 @@ function ProfessorViewer(props) {
     const renderScale =
         baseScale * zoom;
             
-    
+    const renderPDF = (
+    targetRef
+    ) => (
+        <div
+            id="PDFScreen"
+            ref={targetRef}
+            style={{
+                "--screen-bg": screenColor,
+                "--window-view": windowView,
+            }}
+
+            onClick={(e) => {
+                const container =
+                    targetRef.current;
+
+                if (!container) return;
+
+                const rect =
+                    container.getBoundingClientRect();
+
+                const x =
+                    e.clientX - rect.left;
+
+                const y =
+                    e.clientY - rect.top;
+
+                const moveX =
+                    pdfOrientation
+                        ? rect.width * 0.15
+                        : rect.width * 0.3;
+
+                const moveY =
+                    pdfOrientation
+                        ? rect.height * 0.3
+                        : rect.height * 0.15;
+
+                // 좌우
+                if (x < rect.width * 0.3) {
+                    container.scrollLeft -= moveX;
+                }
+                else if (
+                    x > rect.width * 0.7
+                ) {
+                    container.scrollLeft += moveX;
+                }
+
+                // 상하
+                if (y < rect.height * 0.3) {
+                    container.scrollTop -= moveY;
+                }
+                else if (
+                    y > rect.height * 0.7
+                ) {
+                    container.scrollTop += moveY;
+                }
+            }}
+            onContextMenu={async (e) => {
+                e.preventDefault();
+
+                try {
+                    const canvas =
+                        targetRef.current?.querySelector(
+                            "canvas"
+                        );
+
+                    if (!canvas) return;
+
+                    canvas.toBlob(
+                        async (blob) => {
+                            if (!blob) return;
+
+                            await navigator.clipboard.write([
+                                new ClipboardItem({
+                                    [blob.type]:
+                                        blob
+                                })
+                            ]);
+
+                            console.log(
+                                "PDF 화면 복사 완료"
+                            );
+                        }
+                    );
+                }
+                catch (err) {
+                    console.error(
+                        "클립보드 복사 실패:",
+                        err
+                    );
+                }
+            }}
+        >
+            {!pdfFile ? (
+                <div>
+                    PDF를 선택하세요
+                </div>
+            ) : (
+                    <Document
+                        file={pdfFile}
+                        onLoadSuccess={async (pdf) => {
+                            const { numPages } = pdf;
+                            console.log("PDF loaded:", numPages);
+
+                            setNumPages(numPages);
+
+                            if ( lectureCount !== numPages ) {
+                                setLectureCount( numPages );
+                            }
+                            const thumbs = {};
+
+                            for (
+                                let pageNum = 1;
+                                pageNum <= pdf.numPages;
+                                pageNum++
+                            ) {
+                                const page =
+                                    await pdf.getPage(pageNum);
+
+                                const viewport =
+                                    page.getViewport({
+                                        scale: 0.15,
+                                    });
+
+                                const canvas =
+                                    document.createElement("canvas");
+
+                                const context =
+                                    canvas.getContext("2d");
+
+                                canvas.width =
+                                    viewport.width;
+
+                                canvas.height =
+                                    viewport.height;
+
+                                await page.render({
+                                    canvasContext: context,
+                                    viewport,
+                                }).promise;
+
+                                thumbs[`p${pageNum}`] =
+                                    canvas.toDataURL(
+                                        "image/jpeg",
+                                        0.7
+                                    );
+                            }
+
+                            setPdfThumbnails(
+                                thumbs
+                            );
+                        }}
+                        onLoadError={(error) => {
+                            console.error(
+                                "PDF load error:",
+                                error
+                            );
+                        }}
+                        >
+                    <Page
+                        pageNumber={pageNumber}
+                        // width={pdfWidth}
+                        onLoadSuccess={(page) => {
+                            const viewport =
+                                page.getViewport({ scale: 1 });
+
+                                setPageSize({
+                                    width: viewport.width,
+                                    height: viewport.height
+                                });
+
+                                setWindowView(
+                                    viewport.height > viewport.width
+                                    ? "flex-start"
+                                    : "center"
+                                );
+                                
+                                // 값이 없을 때 한 번
+                                if (!pdfOrientation) {
+                                    const portrait = viewport.height > viewport.width;
+
+                                    setPdfOrientation( portrait ? "portrait" : "landscape" );
+
+                                    setFitMode( portrait ? "height" : "width" );
+
+                                    setWindowView( portrait ? "flex-start" : "center" );
+                                }
+                                console.log("PAGE LOAD");
+                            }}
+                        scale={renderScale}
+                    />
+                </Document>
+            )}
+        </div>
+    );
     const zoomIn = () => {
         setZoom((prev) =>
             Math.min(
@@ -253,6 +464,31 @@ function ProfessorViewer(props) {
         } = colorPalette(!isDark);
 
     const screenColor = PDFScreenColor;
+
+    console.log(
+    "container",
+    containerSize
+);
+
+console.log(
+    "page",
+    pageSize
+);
+
+console.log(
+    "widthScale",
+    widthScale
+);
+
+console.log(
+    "heightScale",
+    heightScale
+);
+
+console.log(
+    "fitMode",
+    fitMode
+);
     return (
         <>
 
@@ -294,7 +530,8 @@ function ProfessorViewer(props) {
                                 {Array.from({ length: 6 }).map((_, i) => ( <div key={i}></div> ))}
                             </div>
                         </button>
-                        <button style={{background:"transparent", width:"18px"}}>
+                        <button style={{background:"transparent", width:"18px"}}
+                            onClick={() => setIsFullscreen(true) }>
                             <div className="fullScreenLogo">
                                 {Array.from({ length: 9 }).map((_, i) => ( <div key={i}></div> ))}
                             </div>
@@ -308,184 +545,8 @@ function ProfessorViewer(props) {
                 </div>
 
                 <div className="pdfWindow">
-                    <div
-                        id="PDFScreen"
-                        ref={pdfScreenRef}
-                        style={{
-                            "--screen-bg": screenColor,
-                            "--window-view": windowView,
-                        }}
-
-                        onClick={(e) => {
-                            const container =
-                                pdfScreenRef.current;
-
-                            if (!container) return;
-
-                            const rect =
-                                container.getBoundingClientRect();
-
-                            const x =
-                                e.clientX - rect.left;
-
-                            const y =
-                                e.clientY - rect.top;
-
-                            const moveX =
-                                isPortrait
-                                    ? rect.width * 0.15
-                                    : rect.width * 0.3;
-
-                            const moveY =
-                                isPortrait
-                                    ? rect.height * 0.3
-                                    : rect.height * 0.15;
-
-                            // 좌우
-                            if (x < rect.width * 0.3) {
-                                container.scrollLeft -= moveX;
-                            }
-                            else if (
-                                x > rect.width * 0.7
-                            ) {
-                                container.scrollLeft += moveX;
-                            }
-
-                            // 상하
-                            if (y < rect.height * 0.3) {
-                                container.scrollTop -= moveY;
-                            }
-                            else if (
-                                y > rect.height * 0.7
-                            ) {
-                                container.scrollTop += moveY;
-                            }
-                        }}
-                        onContextMenu={async (e) => {
-                            e.preventDefault();
-
-                            try {
-                                const canvas =
-                                    pdfScreenRef.current?.querySelector(
-                                        "canvas"
-                                    );
-
-                                if (!canvas) return;
-
-                                canvas.toBlob(
-                                    async (blob) => {
-                                        if (!blob) return;
-
-                                        await navigator.clipboard.write([
-                                            new ClipboardItem({
-                                                [blob.type]:
-                                                    blob
-                                            })
-                                        ]);
-
-                                        console.log(
-                                            "PDF 화면 복사 완료"
-                                        );
-                                    }
-                                );
-                            }
-                            catch (err) {
-                                console.error(
-                                    "클립보드 복사 실패:",
-                                    err
-                                );
-                            }
-                        }}
-                    >
-                        {!pdfFile ? (
-                            <div>
-                                PDF를 선택하세요
-                            </div>
-                        ) : (
-                                <Document
-                                    file={pdfFile}
-                                    onLoadSuccess={async (pdf) => {
-                                        const { numPages } = pdf;
-                                        console.log("PDF loaded:", numPages);
-
-                                        setNumPages(numPages);
-
-                                        if ( lectureCount !== numPages ) {
-                                            setLectureCount( numPages );
-                                        }
-                                        const thumbs = {};
-
-                                        for (
-                                            let pageNum = 1;
-                                            pageNum <= pdf.numPages;
-                                            pageNum++
-                                        ) {
-                                            const page =
-                                                await pdf.getPage(pageNum);
-
-                                            const viewport =
-                                                page.getViewport({
-                                                    scale: 0.15,
-                                                });
-
-                                            const canvas =
-                                                document.createElement("canvas");
-
-                                            const context =
-                                                canvas.getContext("2d");
-
-                                            canvas.width =
-                                                viewport.width;
-
-                                            canvas.height =
-                                                viewport.height;
-
-                                            await page.render({
-                                                canvasContext: context,
-                                                viewport,
-                                            }).promise;
-
-                                            thumbs[`p${pageNum}`] =
-                                                canvas.toDataURL(
-                                                    "image/jpeg",
-                                                    0.7
-                                                );
-                                        }
-
-                                        setPdfThumbnails(
-                                            thumbs
-                                        );
-                                    }}
-                                    onLoadError={(error) => {
-                                        console.error(
-                                            "PDF load error:",
-                                            error
-                                        );
-                                    }}
-                                    >
-                                <Page
-                                    pageNumber={pageNumber}
-                                    // width={pdfWidth}
-                                    onLoadSuccess={(page) => {
-                                        const viewport =
-                                            page.getViewport({ scale: 1 });
-
-                                            setPageSize({
-                                                width: viewport.width,
-                                                height: viewport.height
-                                            });
-                                            setWindowView(
-                                                viewport.height > viewport.width
-                                                ? "flex-start"
-                                                : "center"
-                                            );
-                                        }}
-                                    scale={renderScale}
-                                />
-                            </Document>
-                        )}
-                    </div>
-            </div>
+                    {renderPDF( pdfScreenRef )}
+                </div>
 
             </div>
                 <div className="professorButtonGroup bottomNarrow">
@@ -527,6 +588,87 @@ function ProfessorViewer(props) {
 
 
         </div>
+
+        {/* fullscreen overlay */}
+        {isFullscreen && (
+                <div
+                    className="fullscreenOverlay"
+                    onClick={() =>
+                        setIsFullscreen(
+                            false
+                        )
+                    }
+                >
+                    <div
+                        className="fullscreenModal"
+                        onClick={(e) =>
+                            e.stopPropagation()
+                        }
+                    >
+                        <div className="fullscreenToolbar">
+                            <button
+                                onClick={
+                                    zoomOut
+                                }
+                            >
+                                -
+                            </button>
+
+                            <span>
+                                {
+                                    Math.round(
+                                        zoom * 100
+                                    )
+                                }%
+                            </span>
+
+                            <button
+                                onClick={
+                                    zoomIn
+                                }
+                            >
+                                +
+                            </button>
+
+                            <button
+                                onClick={() =>
+                                    setFitMode(
+                                        "width"
+                                    )
+                                }
+                            >
+                                ⇔
+                            </button>
+
+                            <button
+                                onClick={() =>
+                                    setFitMode(
+                                        "height"
+                                    )
+                                }
+                            >
+                                ⇕
+                            </button>
+
+                            <button
+                                onClick={() =>
+                                    setIsFullscreen(
+                                        false
+                                    )
+                                }
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="fullscreenPDF">
+                            {renderPDF(
+                                fullscreenRef
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

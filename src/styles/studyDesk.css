@@ -584,3 +584,61 @@ table {
 .react-pdf__Page canvas{
     display:block;
 }
+
+/* full screen */
+.fullscreenOverlay{
+    position:fixed;
+    inset:0;
+
+    background:
+        rgba(0,0,0,.55);
+
+    z-index:9999;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    backdrop-filter:
+        blur(6px);
+}
+
+.fullscreenModal{
+    width:92vw;
+    height:92vh;
+
+    border-radius:24px;
+
+    overflow:hidden;
+
+    display:flex;
+    flex-direction:column;
+
+    background:#111;
+}
+
+.fullscreenToolbar{
+    height:56px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    padding:0 20px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+}
+
+.fullscreenPDF{
+    
+    min-height:0;
+
+    overflow:hidden;
+}
+
+.fullscreenPDF #PDFScreen{
+    width:100%;
+    height:100%;
+    overflow:auto;
+}
