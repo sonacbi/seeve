@@ -11,7 +11,7 @@ function NoteEditor({
 }) {
 const inputRef = useRef(null);
 const ROWS = 40;
-const COLS = 12;
+const COLS = 6;
 
 // =========================
 // SETTER (UI STATE)
@@ -233,18 +233,28 @@ useEffect(() => {
     if (document.activeElement?.tagName === "TEXTAREA") return;
 
     switch (e.key) {
-      case "ArrowRight":
-        moveCellWithFocus(0, 1);
-        break;
-      case "ArrowLeft":
-        moveCellWithFocus(0, -1);
-        break;
-      case "ArrowDown":
-        moveCellWithFocus(1, 0);
-        break;
-      case "ArrowUp":
-        moveCellWithFocus(-1, 0);
-        break;
+        case "ArrowRight":
+            moveCellWithFocus(0, 1);
+            break;
+        case "ArrowLeft":
+            moveCellWithFocus(0, -1);
+            break;
+        case "ArrowDown":
+            moveCellWithFocus(1, 0);
+            break;
+        case "ArrowUp":
+            moveCellWithFocus(-1, 0);
+            break;
+            
+        case "Tab":
+            e.preventDefault();
+            moveCell(0, e.shiftKey ? -1 : 1);
+            break;
+
+        case "Enter":
+            e.preventDefault();
+            moveCell(e.shiftKey ? -1 : 1, 0);
+            break;
     }
   };
 
@@ -465,14 +475,23 @@ useEffect(() => {
 //             </div>
 //         );
 //     }
+
+
+
+
 const editorRef = useRef(null);
 
+const CELL_HEIGHT = 40;
+const GRID_COLS = COLS;
+const GRID_ROWS = ROWS;
+const CELL_WIDTH = `calc(100% / ${GRID_COLS})`;
+const CELL_WIDTH_PERCENT = 100 / COLS;
 const pos = activeCell
   ? {
-      top: activeCell.row * 120,
-      left: activeCell.col * (100 / 12) + "%",
-      width: "calc(100% / 12)",
-      height: "120px"
+      top: activeCell.row * CELL_HEIGHT,
+      left: `${activeCell.col * CELL_WIDTH_PERCENT}%`,
+      width: `${CELL_WIDTH_PERCENT}%`,
+      height: `${CELL_HEIGHT}px`
     }
   : null;
 
@@ -485,8 +504,8 @@ const pos = activeCell
                 ref={editorRef}
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(12, 1fr)",
-                    gridAutoRows: "120px",
+                    "--grid-cols" : `repeat(${GRID_COLS}, 1fr)`,
+                    "--grid-rows": `${CELL_HEIGHT}px`,
                     width: "100%",
                     height: "100%",
                 }}
