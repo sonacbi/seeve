@@ -16,17 +16,24 @@ const COLS = 6;
 // =========================
 // SETTER (UI STATE)
 // =========================
-const [activeCell, setActiveCell] = useState(null);
+// const [activeCell, setActiveCell] = useState(null);
 const { draftRef, /*setDraft,*/ clearDraft } = useDraft();
-const [createMode, setCreateMode] = useState(false);
-const [selectedCellId, setSelectedCellId] = useState(null);
+const [mode, setMode] = useState("select");
+
+const [activeCell, setActiveCell] = useState({
+  row: 0,
+  col: 0,
+  mode: "select",
+});
+const [imageEditor, setImageEditor] = useState(null);
+// { row, col }
 
 console.log(currentNote);
 // =========================
 // GETTER (READ ONLY)
 // =========================
-const currentPage =
-  setNotePages?.[currentNote.lecturePage] ?? [];
+// const currentPage =
+//   setNotePages?.[currentNote.lecturePage] ?? [];
 
 // const note =
 //   currentPage.find(n => n.id === currentNote.id);
@@ -45,42 +52,12 @@ const getCell = (row, col) =>
 //   note?.cells?.[`${row}-${col}`] ?? null;
   cellMap[`${row}-${col}`] ?? null;
 
-// active value
-const activeValue = activeCell
-  ? getCell(activeCell.row, activeCell.col)?.content ?? ""
-  : "";
 
 // =========================
 // UPDATE (CELL)
 // =========================
 const { updateCellValue } = useCellUpdater(setNotePages, currentNote);
 
-
-const updateCellType = (cellId, type) => {
-  setNotePages(prev => {
-    const pages = [...(prev[currentNote.lecturePage] ?? [])];
-
-    return {
-      ...prev,
-      [currentNote.lecturePage]: pages.map(n => {
-        if (n.id !== currentNote.id) return n;
-
-        const cells = { ...(n.cells ?? {}) };
-
-        Object.keys(cells).forEach(key => {
-          if (cells[key].id === cellId) {
-            cells[key] = {
-              ...cells[key],
-              type
-            };
-          }
-        });
-
-        return { ...n, cells };
-      })
-    };
-  });
-};
 const updateCell = (cellId, patch) => {
   setNotePages(prev => {
     const updated = { ...prev };
@@ -120,27 +97,37 @@ const commitDraft = () => {
 };
 
 // grid 생성 렌더
+const hiddenCells = new Set();
+
 const grid = useMemo(() => {
-  const map = note?.cells ?? {};
+    const result = [];
 
-  const result = [];
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
 
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const key = `${r}-${c}`;
-      const cell = map[key];
+            if (hiddenCells.has(`${r}-${c}`))
+                continue;
 
-      result.push({
-        key,
-        row: r,
-        col: c,
-        cell
-      });
+            const key = `${r}-${c}`;
+            const cell = cellMap[key];
+
+            if (cell?.colSpan > 1) {
+                for (let i = 1; i < cell.colSpan; i++) {
+                    hiddenCells.add(`${r}-${c+i}`);
+                }
+            }
+
+            result.push({
+                key,
+                row: r,
+                col: c,
+                cell
+            });
+        }
     }
-  }
 
-  return result;
-}, [note?.cells]);
+    return result;
+}, [cellMap]);
 
 // setter update 혼합
 const createCell = (type) => {
@@ -227,41 +214,6 @@ const enterEditMode = (row, col) => {
   });
 };
 
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (!activeCell) return;
-    if (document.activeElement?.tagName === "TEXTAREA") return;
-
-    switch (e.key) {
-        case "ArrowRight":
-            moveCellWithFocus(0, 1);
-            break;
-        case "ArrowLeft":
-            moveCellWithFocus(0, -1);
-            break;
-        case "ArrowDown":
-            moveCellWithFocus(1, 0);
-            break;
-        case "ArrowUp":
-            moveCellWithFocus(-1, 0);
-            break;
-            
-        case "Tab":
-            e.preventDefault();
-            moveCell(0, e.shiftKey ? -1 : 1);
-            break;
-
-        case "Enter":
-            e.preventDefault();
-            moveCell(e.shiftKey ? -1 : 1, 0);
-            break;
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [activeCell]);
-
 
     // const updateSelectedCellType = (type) => {
     //     if (!selectedCellId) return;
@@ -275,106 +227,255 @@ useEffect(() => {
     //         type,
     //     });
     // };
-    const applyToSelectedCell = useCallback((type, id) => {
-        updateCell(id, { type });
-    }, [updateCell]);
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (!activeCell) return;
+    // const applyToSelectedCell = useCallback((type, id) => {
+    //     updateCell(id, { type });
+    // }, [updateCell]);
+const applyToSelectedCell = useCallback((type) => {
+    const row = activeCell.row;
+    const key = `${row}-0`;
 
-    // 이미 editor 열려있으면 ignore
-    if (activeCell.mode === "edit") return;
+    const targetCell = cellMap[key];
 
-    // Tab / Enter 같은 네비게이션은 제외
-    if (e.key === "Tab" || e.key === "Enter") return;
+    if (targetCell) {
+        updateCell(targetCell.id, {
+            type,
+            colSpan: COLS
+        });
+    } else {
+        setNotePages(prev => {
+            const updated = { ...prev };
 
-    // 방향키도 제외
-    if (e.key.startsWith("Arrow")) return;
+            updated[currentNote.lecturePage] =
+                updated[currentNote.lecturePage].map(note => {
+                    if (note.id !== currentNote.id) return note;
 
-    // 수정 가능한 키만 감지
-    const isPrintable =
-      e.key.length === 1 || e.key === "Backspace";
+                    const cells = {
+                        ...(note.cells ?? {})
+                    };
 
-    if (!isPrintable) return;
+                    cells[key] = {
+                        id: crypto.randomUUID(),
+                        row,
+                        col: 0,
+                        type,
+                        colSpan: COLS,
+                        content: ""
+                    };
 
-    e.preventDefault();
+                    return {
+                        ...note,
+                        cells
+                    };
+                });
 
-    const initialValue =
-      e.key === "Backspace" ? "" : e.key;
+            return updated;
+        });
+    }
 
-    // editor 자동 오픈
     setActiveCell(prev => ({
-      ...prev,
-      mode: "edit"
+        ...prev,
+        col: 0,
+        mode: "select"
     }));
-
-    // draft 세팅
-    draftRef.current = initialValue;
-
-    if (inputRef.current) {
-      inputRef.current.value = initialValue;
-      inputRef.current.focus();
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown, true);
-  return () => window.removeEventListener("keydown", handleKeyDown, true);
-}, [activeCell]);
-
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (!activeCell) return;
-
-    // 1. Ctrl + Space → 타입 선택 모드 진입
-    if (e.ctrlKey && e.code === "Space") {
-      e.preventDefault();
-
-      // 현재 셀 기준으로만 동작
-      setCreateMode(true);
-      return;
-    }
-
-    if (!createMode) return;
-
-    const key = e.key.toLowerCase();
-
-    switch (key) {
-      case "f":
-        applyToSelectedCell("formula", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
-        break;
-
-      case "i":
-        applyToSelectedCell("image", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
-        break;
-
-      case "g":
-        applyToSelectedCell("graph", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
-        break;
-
-      case "m":
-        applyToSelectedCell("mindmap", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
-        break;
-
-      case "escape":
-        setCreateMode(false);
-        return;
-
-      default:
-        return;
-    }
-
-    setCreateMode(false);
-  };
-
-  window.addEventListener("keydown", handleKeyDown, true);
-  return () => window.removeEventListener("keydown", handleKeyDown, true);
 }, [
-  createMode,
-  activeCell,
-  applyToSelectedCell,
-  cellMap
+    activeCell,
+    cellMap,
+    COLS,
+    currentNote,
+    setNotePages,
+    updateCell
 ]);
 
+    // 셀 이동 전용
+    useEffect(() => {
+    const handleMoveKeyDown = (e) => {
+        if (!activeCell) return;
+
+        // textarea 편집 중이면 무시
+        if (document.activeElement?.tagName === "TEXTAREA") {
+        return;
+        }
+
+        switch (e.key) {
+        case "ArrowRight":
+            e.preventDefault();
+            moveCellWithFocus(0, 1);
+            return;
+
+        case "ArrowLeft":
+            e.preventDefault();
+            moveCellWithFocus(0, -1);
+            return;
+
+        case "ArrowDown":
+            e.preventDefault();
+            moveCellWithFocus(1, 0);
+            return;
+
+        case "ArrowUp":
+            e.preventDefault();
+            moveCellWithFocus(-1, 0);
+            return;
+
+        case "Tab":
+            e.preventDefault();
+            moveCell(0, e.shiftKey ? -1 : 1);
+            return;
+
+        case "Enter":
+            e.preventDefault();
+            moveCell(e.shiftKey ? -1 : 1, 0);
+            return;
+
+        default:
+            return;
+        }
+    };
+
+    window.addEventListener("keydown", handleMoveKeyDown);
+
+    return () => {
+        window.removeEventListener(
+        "keydown",
+        handleMoveKeyDown
+        );
+    };
+    }, [
+    activeCell,
+    moveCell,
+    moveCellWithFocus
+    ]);
+useEffect(() => {
+    console.log("mode:", activeCell?.mode);
+}, [activeCell?.mode]);
+    useEffect(() => {
+        const handleCommandKeyDown = (e) => {
+            if (!activeCell) return;
+
+            // Ctrl + Space
+            if (
+            activeCell.mode === "select" &&
+            e.ctrlKey &&
+            e.code === "Space"
+            ) {
+            e.preventDefault();
+
+            setActiveCell(prev => ({
+                ...prev,
+                mode: "command"
+            }));
+
+            return;
+            }
+
+            if (activeCell.mode !== "command") return;
+
+            const key = e.key.toLowerCase();
+
+            switch (key) {
+            case "f": {
+                applyToSelectedCell("formula");
+                break;
+            }
+
+            case "i": {
+                applyToSelectedCell("image");
+                
+                break;
+            }
+
+            case "g": {
+                applyToSelectedCell("graph");
+                
+                break;
+            }
+
+            case "m": {
+                applyToSelectedCell("mindmap");
+                break;
+            }
+
+            case "escape":
+                break;
+
+            default:
+                return;
+            }
+
+            setActiveCell(prev => ({
+            ...prev,
+            mode: "select"
+            }));
+        };
+
+        window.addEventListener(
+            "keydown",
+            handleCommandKeyDown
+        );
+
+        return () =>
+            window.removeEventListener(
+            "keydown",
+            handleCommandKeyDown
+            );
+        }, [
+    activeCell,
+    applyToSelectedCell
+    ]);
+
+    useEffect(() => {
+    const handleEditStart = (e) => {
+        if (!activeCell) return;
+
+        if (activeCell.mode !== "select") return;
+
+        if ( document.activeElement?.tagName === "TEXTAREA" ) { return; }
+        
+        const rowSpecialCell = cellMap[`${activeCell?.row}-0`];
+
+        const isSpecialRow =
+            rowSpecialCell &&
+            rowSpecialCell.type !== "text";
+
+        if (isSpecialRow) { return;}
+
+        const isPrintable =
+        e.key.length === 1 ||
+        e.key === "Backspace";
+
+        if (!isPrintable) return;
+
+        e.preventDefault();
+
+        setActiveCell(prev => ({
+        ...prev,
+        mode: "edit"
+        }));
+
+        draftRef.current =
+        e.key === "Backspace"
+            ? ""
+            : e.key;
+
+        requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        });
+    };
+
+    window.addEventListener(
+        "keydown",
+        handleEditStart
+    );
+
+    return () =>
+        window.removeEventListener(
+        "keydown",
+        handleEditStart
+        );
+    }, [
+    activeCell,
+    draftRef
+    ]);
 
     // const createFormulaCell = () =>
     //     createCell("formula");
@@ -483,8 +584,8 @@ const editorRef = useRef(null);
 
 const CELL_HEIGHT = 40;
 const GRID_COLS = COLS;
-const GRID_ROWS = ROWS;
-const CELL_WIDTH = `calc(100% / ${GRID_COLS})`;
+// const GRID_ROWS = ROWS;
+// const CELL_WIDTH = `calc(100% / ${GRID_COLS})`;
 const CELL_WIDTH_PERCENT = 100 / COLS;
 const pos = activeCell
   ? {
@@ -514,7 +615,9 @@ const pos = activeCell
                     <Cell
                         key={key}
                         cell={cell}
-                        isActive={activeCell?.row === row && activeCell?.col === col}
+                        isActive={ cell?.col === 0 && cell?.colSpan > 1 ?
+                            activeCell?.row === row : ( activeCell?.row === row && activeCell?.col === col )
+                        }
                         onClick={() => setActiveCell({ row, col, mode: "select" })}
                         onDoubleClick={() => enterEditMode(row, col)}
                     />

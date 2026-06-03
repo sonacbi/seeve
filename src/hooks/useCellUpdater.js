@@ -10,8 +10,11 @@ export function useCellUpdater(setNotePages, currentNote) {
 
           const cells = { ...(n.cells ?? {}) };
           const key = `${row}-${col}`;
+            const isSpecialCell =
+            cells[key]?.type &&
+            cells[key]?.type !== "text";
 
-          if (!value) delete cells[key];
+          if (!value && !isSpecialCell) delete cells[key];
           else {
             cells[key] = {
               ...(cells[key] ?? {}),

@@ -27,6 +27,7 @@ export function useCellNavigation({
       return {
         row: Math.max(0, Math.min(ROWS - 1, prev.row + dr)),
         col: Math.max(0, Math.min(COLS - 1, prev.col + dc)),
+        mode: "select",
       };
     });
   };
