@@ -1,17 +1,23 @@
 
-import { useState, useEffect, useRef, memo, useMemo } from "react";           
-
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";           
+import { useCellUpdater } from "../../hooks/useCellUpdater";
+import { useDraft } from "../../hooks/useDraft";
+import { useCellNavigation } from "../../hooks/useCellNavigation";
+import Cell from "./Cell";
 function NoteEditor({
     setNotePages,
     notePages,
     currentNote,
 }) {
+const inputRef = useRef(null);
+const ROWS = 40;
+const COLS = 12;
+
 // =========================
 // SETTER (UI STATE)
 // =========================
 const [activeCell, setActiveCell] = useState(null);
-const draftRef = useRef("");
-// const [draft, setDraft] = useState(""); // flush
+const { draftRef, /*setDraft,*/ clearDraft } = useDraft();
 const [createMode, setCreateMode] = useState(false);
 const [selectedCellId, setSelectedCellId] = useState(null);
 
@@ -29,15 +35,6 @@ const note = useMemo(() => {
     ?.find(n => n.id === currentNote.id);
 }, [notePages, currentNote]);
 
-// const note =
-//   setNotePages?.[currentNote.lecturePage]
-//     ?.find(n => n.id === currentNote.id);
-  
-// const page = setNotePages[currentNote.lecturePage];
-// const note = useMemo(() => {
-//   return setNotePages[currentNote.lecturePage]
-//     ?.find(n => n.id === currentNote.id);
-// }, [setNotePages, currentNote]);
 
 const cellMap = useMemo(() => {
   return note?.cells ?? {};
@@ -56,36 +53,8 @@ const activeValue = activeCell
 // =========================
 // UPDATE (CELL)
 // =========================
-const updateCellValue = (row, col, value) => {
-  setNotePages(prev => {
-    const pages = [...(prev[currentNote.lecturePage] ?? [])];
+const { updateCellValue } = useCellUpdater(setNotePages, currentNote);
 
-    return {
-      ...prev,
-      [currentNote.lecturePage]: pages.map(n => {
-        if (n.id !== currentNote.id) return n;
-
-        const cells = { ...(n.cells ?? {}) };
-        const key = `${row}-${col}`;
-
-        if (!value) {
-          delete cells[key];
-        } else {
-          cells[key] = {
-            ...(cells[key] ?? {}),
-            id: cells[key]?.id ?? crypto.randomUUID(),
-            type: cells[key]?.type ?? "text",
-            row,
-            col,
-            content: value,
-          };
-        }
-
-        return { ...n, cells };
-      })
-    };
-  });
-};
 
 const updateCellType = (cellId, type) => {
   setNotePages(prev => {
@@ -146,14 +115,32 @@ const commitDraft = () => {
 
   const value = draftRef.current;
 
-  updateCellValue(
-    activeCell.row,
-    activeCell.col,
-    value
-  );
-
-  draftRef.current = "";
+  updateCellValue(activeCell.row, activeCell.col, value);
+  clearDraft();
 };
+
+// grid 생성 렌더
+const grid = useMemo(() => {
+  const map = note?.cells ?? {};
+
+  const result = [];
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const key = `${r}-${c}`;
+      const cell = map[key];
+
+      result.push({
+        key,
+        row: r,
+        col: c,
+        cell
+      });
+    }
+  }
+
+  return result;
+}, [note?.cells]);
 
 // setter update 혼합
 const createCell = (type) => {
@@ -182,48 +169,8 @@ const createCell = (type) => {
         })
         };
     });
-    // setNotePages(prev => {
-    //     const updated = { ...prev };
 
-    //     updated[currentNote.lecturePage] =
-    //         updated[currentNote.lecturePage].map(note => {
-    //             if (note.id !== currentNote.id) return note;
-
-    //             const newCells = {
-    //                 ...(note.cells ?? {}),
-    //             };
-
-    //             const key = activeKey;
-    //             if (!key) return;
-
-    //             newCells[key] = {
-    //                 id: crypto.randomUUID(),
-    //                 type,
-    //                 row: activeCell.row,
-    //                 col: activeCell.col,
-    //                 rowSpan: 1,
-    //                 colSpan: 1,
-    //                 content: "",
-    //                 latex: "",
-    //                 imageData: null,
-    //             };
-
-    //             return {
-    //                 ...note,
-    //                 cells: newCells,
-    //             };
-    //         });
-
-    //     return updated;
-    // });
 };
-
-// useEffect(() => {
-//     if (!activeCell) return;
-//     const cell = getCell(activeCell.row, activeCell.col);
-//     setDraft(cell?.content ?? "");
-  
-// }, [activeCell, notePages]);
 
 useEffect(() => {
   if (!activeCell) return;
@@ -238,82 +185,65 @@ useEffect(() => {
 }, [activeCell, cellMap]);
 
 // useEffect(() => {
-//   if (!activeCell) return;
+//   if (!activeCell || !inputRef.current) return;
 
-//   setDraft(
-//     note?.cells?.[`${activeCell.row}-${activeCell.col}`]?.content ?? ""
-//   );
+//   const cell = cellMap[`${activeCell.row}-${activeCell.col}`];
+//   const value = cell?.content ?? "";
+
+//   draftRef.current = value;
+//   inputRef.current.value = value;
+//   inputRef.current.focus();
 // }, [activeCell]);
 
+// useEffect(() => {
+//   if (activeCell && inputRef.current) {
+//     inputRef.current.focus();
+//   }
+// }, [activeCell]);
 
-useEffect(() => {
-  if (activeCell && inputRef.current) {
-    inputRef.current.focus();
-  }
-}, [activeCell]);
+const { moveCell } = useCellNavigation({
+  activeCell,
+  setActiveCell,
+//   draftRef,
+//   clearDraft,
+//   updateCellValue,
+  commitDraft,
+  ROWS,
+  COLS
+});
+const moveCellWithFocus = (dr, dc) => {
+  moveCell(dr, dc);
 
-const inputRef = useRef(null);
-// const cells = currentNote.cells ?? {};
-const ROWS = 40;
-const COLS = 12;
-// const [cursor, setCursor] = useState({
-//     row: 0,
-//     col: 0,
-// });
-const moveCell = (dr, dc) => {
-    if (activeCell) {
-        const value = draftRef.current;
-
-        updateCellValue(
-        activeCell.row,
-        activeCell.col,
-        value
-        );
-
-        draftRef.current = "";
-    }
-
-    setActiveCell(prev => {
-        if (!prev) return prev;
-
-        return {
-        row: Math.max(0, Math.min(ROWS - 1, prev.row + dr)),
-        col: Math.max(0, Math.min(COLS - 1, prev.col + dc)),
-        };
-    });
-};
-
-const moveCursor = (dr, dc) => {
-  setActiveCell(prev => {
-    if (!prev) return prev;
-
-    return {
-      row: Math.max(0, Math.min(ROWS - 1, prev.row + dr)),
-      col: Math.max(0, Math.min(COLS - 1, prev.col + dc)),
-    };
+  requestAnimationFrame(() => {
+    inputRef.current?.focus();
   });
 };
-const activeKey = activeCell
-  ? `${activeCell.row}-${activeCell.col}`
-  : null;
 
-    useEffect(() => {
+const enterEditMode = (row, col) => {
+  setActiveCell({ row, col, mode: "edit" });
+
+  requestAnimationFrame(() => {
+    inputRef.current?.focus();
+  });
+};
+
+useEffect(() => {
   const handleKeyDown = (e) => {
     if (!activeCell) return;
     if (document.activeElement?.tagName === "TEXTAREA") return;
 
     switch (e.key) {
       case "ArrowRight":
-        moveCell(0, 1);
+        moveCellWithFocus(0, 1);
         break;
       case "ArrowLeft":
-        moveCell(0, -1);
+        moveCellWithFocus(0, -1);
         break;
       case "ArrowDown":
-        moveCell(1, 0);
+        moveCellWithFocus(1, 0);
         break;
       case "ArrowUp":
-        moveCell(-1, 0);
+        moveCellWithFocus(-1, 0);
         break;
     }
   };
@@ -323,66 +253,101 @@ const activeKey = activeCell
 }, [activeCell]);
 
 
-    const updateSelectedCellType = (type) => {
-        if (!selectedCellId) return;
+    // const updateSelectedCellType = (type) => {
+    //     if (!selectedCellId) return;
 
-        updateCell(selectedCellId, { type });
-    };
-    const applyToSelectedCell = (type) => {
-        if (!selectedCellId) return;
+    //     updateCell(selectedCellId, { type });
+    // };
+    // const applyToSelectedCell = (type) => {
+    //     if (!selectedCellId) return;
 
-        updateCell(selectedCellId, {
-            type,
-        });
-    };
-
-    useEffect(() => {
+    //     updateCell(selectedCellId, {
+    //         type,
+    //     });
+    // };
+    const applyToSelectedCell = useCallback((type, id) => {
+        updateCell(id, { type });
+    }, [updateCell]);
+useEffect(() => {
   const handleKeyDown = (e) => {
-    // 1. Ctrl + Space
+    if (!activeCell) return;
+
+    // 이미 editor 열려있으면 ignore
+    if (activeCell.mode === "edit") return;
+
+    // Tab / Enter 같은 네비게이션은 제외
+    if (e.key === "Tab" || e.key === "Enter") return;
+
+    // 방향키도 제외
+    if (e.key.startsWith("Arrow")) return;
+
+    // 수정 가능한 키만 감지
+    const isPrintable =
+      e.key.length === 1 || e.key === "Backspace";
+
+    if (!isPrintable) return;
+
+    e.preventDefault();
+
+    const initialValue =
+      e.key === "Backspace" ? "" : e.key;
+
+    // editor 자동 오픈
+    setActiveCell(prev => ({
+      ...prev,
+      mode: "edit"
+    }));
+
+    // draft 세팅
+    draftRef.current = initialValue;
+
+    if (inputRef.current) {
+      inputRef.current.value = initialValue;
+      inputRef.current.focus();
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown, true);
+  return () => window.removeEventListener("keydown", handleKeyDown, true);
+}, [activeCell]);
+
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (!activeCell) return;
+
+    // 1. Ctrl + Space → 타입 선택 모드 진입
     if (e.ctrlKey && e.code === "Space") {
       e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
 
+      // 현재 셀 기준으로만 동작
       setCreateMode(true);
-
-      // 안전한 최신 값 기준으로 처리
-      setSelectedCellId(prev => {
-        if (!prev) {
-          const isEmpty = Object.keys(currentNote?.cells ?? {}).length === 0;
-          if (isEmpty) {
-            createCell("text");
-          }
-        }
-        return prev;
-      });
-
       return;
     }
 
-    // 2. createMode 아니면 무시
     if (!createMode) return;
 
-    switch (e.key.toLowerCase()) {
+    const key = e.key.toLowerCase();
+
+    switch (key) {
       case "f":
-        applyToSelectedCell("formula");
+        applyToSelectedCell("formula", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
         break;
 
       case "i":
-        applyToSelectedCell("image");
+        applyToSelectedCell("image", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
         break;
 
       case "g":
-        applyToSelectedCell("graph");
+        applyToSelectedCell("graph", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
         break;
 
       case "m":
-        applyToSelectedCell("mindmap");
+        applyToSelectedCell("mindmap", cellMap?.[`${activeCell.row}-${activeCell.col}`]?.id);
         break;
 
       case "escape":
-        setSelectedCellId(null);
-        break;
+        setCreateMode(false);
+        return;
 
       default:
         return;
@@ -392,117 +357,114 @@ const activeKey = activeCell
   };
 
   window.addEventListener("keydown", handleKeyDown, true);
-
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown, true);
-  };
+  return () => window.removeEventListener("keydown", handleKeyDown, true);
 }, [
   createMode,
+  activeCell,
   applyToSelectedCell,
-  createCell,
-  currentNote?.cells
+  cellMap
 ]);
 
 
-    const createFormulaCell = () =>
-        createCell("formula");
+    // const createFormulaCell = () =>
+    //     createCell("formula");
 
-    const createImageCell = () =>
-        createCell("image");
+    // const createImageCell = () =>
+    //     createCell("image");
 
-    const createGraphCell = () =>
-        createCell("graph");
+    // const createGraphCell = () =>
+    //     createCell("graph");
 
-    const createMindMapCell = () =>
-        createCell("mindmap");
+    // const createMindMapCell = () =>
+    //     createCell("mindmap");
 
-    const renderCell = (cell) => {
-    switch (cell.type) {
-        case "text":
-            return (
-                <div
-                onClick={() => {
-                    setActiveCell({
-                    row: cell.row,
-                    col: cell.col
-                    });
+    // const renderCell = (cell) => {
+    // switch (cell.type) {
+    //     case "text":
+    //         return (
+    //             <div
+    //             onClick={() => {
+    //                 setActiveCell({
+    //                 row: cell.row,
+    //                 col: cell.col
+    //                 });
 
-                    // setDraftValue(cell.content ?? "");
-                }}
-                style={{ width: "100%", height: "100%" }}
-                >
-                {cell.content}
-                </div>
-            );
+    //                 // setDraftValue(cell.content ?? "");
+    //             }}
+    //             style={{ width: "100%", height: "100%" }}
+    //             >
+    //             {cell.content}
+    //             </div>
+    //         );
 
-                case "formula":
-                    return (
-                        <FormulaCell
-                            cell={cell}
-                        />
-                    );
+    //             case "formula":
+    //                 return (
+    //                     <FormulaCell
+    //                         cell={cell}
+    //                     />
+    //                 );
 
-                case "image":
-                    return (
-                        <ImageCell
-                            cell={cell}
-                        />
-                    );
+    //             case "image":
+    //                 return (
+    //                     <ImageCell
+    //                         cell={cell}
+    //                     />
+    //                 );
 
-                // case "graph":
-                //     return (
-                //         <GraphCell
-                //             cell={cell}
-                //         />
-                //     );
+    //             // case "graph":
+    //             //     return (
+    //             //         <GraphCell
+    //             //             cell={cell}
+    //             //         />
+    //             //     );
 
-                // case "mindmap":
-                //     return (
-                //         <MindMapCell
-                //             cell={cell}
-                //         />
-                //     );
+    //             // case "mindmap":
+    //             //     return (
+    //             //         <MindMapCell
+    //             //             cell={cell}
+    //             //         />
+    //             //     );
 
-                default:
-                    return null;
-            }
-        };
-function FormulaCell({ cell }) {
-    return (
-        <input
-            style={{
-                border: "none",
-                outline: "none",
-                width: "100%",
-                height: "100%",
-                background: "transparent",
-            }}
-            placeholder="LaTeX"
-            value={cell.latex}
-            onChange={(e) =>
-                updateCell(cell.id, {
-                    latex: e.target.value,
-                })
-            }
-        />
-    );
-}
-    function ImageCell({ cell }) {
-        return (
-            <div className="image-cell">
+    //             default:
+    //                 return null;
+    //         }
+    //     };
+// function FormulaCell({ cell }) {
+//     return (
+//         <input
+//             style={{
+//                 border: "none",
+//                 outline: "none",
+//                 width: "100%",
+//                 height: "100%",
+//                 background: "transparent",
+//             }}
+//             placeholder="LaTeX"
+//             value={cell.latex}
+//             onChange={(e) =>
+//                 updateCell(cell.id, {
+//                     latex: e.target.value,
+//                 })
+//             }
+//         />
+//     );
+// }
+//     function ImageCell({ cell }) {
+//         return (
+//             <div className="image-cell">
 
-                {cell.imageData ? (
-                    <img
-                        src={cell.imageData}
-                        alt=""
-                    />
-                ) : (
-                    "이미지 없음"
-                )}
+//                 {cell.imageData ? (
+//                     <img
+//                         src={cell.imageData}
+//                         alt=""
+//                     />
+//                 ) : (
+//                     "이미지 없음"
+//                 )}
 
-            </div>
-        );
-    }
+//             </div>
+//         );
+//     }
 const editorRef = useRef(null);
 
 const pos = activeCell
@@ -513,64 +475,7 @@ const pos = activeCell
       height: "120px"
     }
   : null;
-    // -----------------------
-    // 텍스트 수정
-    // -----------------------
-    const updateContent = (text) => {
-        setNotePages((prev) => {
-        const updated = { ...prev };
 
-        updated[currentNote.lecturePage] =
-            updated[
-            currentNote.lecturePage
-            ].map((page) =>
-            page.id === currentNote.id
-                ? {
-                    ...page,
-                    content: text,
-                }
-                : page
-            );
-
-        return updated;
-        });
-    };
-// const Cell = memo(({ cell, cellKey, activeKey, onClick }) => {
-//   const isActive = cellKey === activeKey;
-
-//   return (
-//     <div
-//       onClick={onClick}
-//       style={{
-//         border: isActive
-//           ? "2px solid #4f46e5"
-//           : "1px solid #ddd",
-//         width: "100%",
-//         height: "100%"
-//       }}
-//     >
-//       {cell ? cell.content : <div />}
-//     </div>
-//   );
-// });
-const Cell = memo(({ cell, isActive, onClick }) => {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        border: isActive ? "2px solid #4f46e5" : "1px solid #ddd",
-        width: "100%",
-        height: "100%"
-      }}
-    >
-      {cell?.content ?? ""}
-    </div>
-  );
-});
-const currentValue =
-  activeCell
-    ? getCell(activeCell.row, activeCell.col)?.content ?? ""
-    : "";
     return (
         <>
             <div id="note-window">
@@ -586,37 +491,31 @@ const currentValue =
                     height: "100%",
                 }}
                 >
-                {Array.from({ length: ROWS }).map((_, row) =>
-                Array.from({ length: COLS }).map((_, col) => {
-                    const cell = getCell(row, col);
-                    const key = `${row}-${col}`;
-
-                    return (
+                {grid.map(({ key, row, col, cell }) => (
                     <Cell
                         key={key}
                         cell={cell}
                         isActive={activeCell?.row === row && activeCell?.col === col}
-                        onClick={() => setActiveCell({ row, col })}
+                        onClick={() => setActiveCell({ row, col, mode: "select" })}
+                        onDoubleClick={() => enterEditMode(row, col)}
                     />
-                    );
-                })
-                )}
-            {activeCell && pos && (
+                ))}
+            {activeCell && activeCell.mode === "edit" && pos && (
                 <textarea
                     className="floating-editor"
                     autoFocus
                     onKeyDown={(e) => {
                         if (e.key === "Tab") {
                         e.preventDefault();
-
-                        moveCell(0, e.shiftKey ? -1 : 1);
+                        e.stopPropagation();
+                        moveCellWithFocus(0, e.shiftKey ? -1 : 1);
                         return;
                         }
 
                         if (e.key === "Enter") {
                         e.preventDefault();
-
-                        moveCell(e.shiftKey ? -1 : 1, 0);
+                        e.stopPropagation();
+                        moveCellWithFocus(e.shiftKey ? -1 : 1, 0);
                         return;
                         }
                     }}
