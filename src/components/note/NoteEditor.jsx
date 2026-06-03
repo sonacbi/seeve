@@ -466,13 +466,19 @@ useEffect(() => {
 //         );
 //     }
 const editorRef = useRef(null);
-
+//    grid-template-columns: repeat(12, 1fr);
+//    grid-auto-rows: 120px;
+const cell_width = 6;
+const gridcolumns = `repeat(${cell_width}, 1fr)`;
+const pos_width = `calc(100% / ${cell_width})`;
+const height = 40;
+const gridrows = `${height}px`;
 const pos = activeCell
   ? {
-      top: activeCell.row * 120,
-      left: activeCell.col * (100 / 12) + "%",
-      width: "calc(100% / 12)",
-      height: "120px"
+      top: activeCell.row * height,
+      left: activeCell.col * (100 / cell_width) + "%",
+      width: pos_width,
+      height: gridrows,
     }
   : null;
 
@@ -484,17 +490,17 @@ const pos = activeCell
                 className="note-editor"
                 ref={editorRef}
                 style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(12, 1fr)",
-                    gridAutoRows: "120px",
-                    width: "100%",
-                    height: "100%",
+                    "--grid-columns" : gridcolumns,
+                    "--grid-rows" : gridrows,
+                    
                 }}
                 >
-                {grid.map(({ key, row, col, cell }) => (
+                {grid.map(({ key, row, col, cell, pos_width, gridrows }) => (
                     <Cell
                         key={key}
                         cell={cell}
+                        pos_width = {pos_width}
+                        gridrows = {gridrows}
                         isActive={activeCell?.row === row && activeCell?.col === col}
                         onClick={() => setActiveCell({ row, col, mode: "select" })}
                         onDoubleClick={() => enterEditMode(row, col)}
