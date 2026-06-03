@@ -27,6 +27,32 @@ function ProfessorNavigator({
     setPdfThumbnails,
     pdfThumbnails,
 }) {
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const animateTime = 0.5;
+
+    const handleCollapse = () => {
+        if (isCollapsed || isAnimating) return;
+
+        setIsAnimating(true);
+        setIsCollapsed(true);
+
+        setTimeout(() => { setIsAnimating(false); }, animateTime*1000);
+    };
+
+    const handleExpand = () => {
+        if (!isCollapsed || isAnimating) return;
+
+        setIsAnimating(true);
+
+        setIsVisible(true);
+
+        requestAnimationFrame(() => { setIsCollapsed(false); });
+
+        setTimeout(() => { setIsAnimating(false); }, animateTime*1000);
+    };
+
     const {textColor, slotBorder, slotBorder_A, slotColor, slotColor_A,
     /*slotShadow,*/ slotShadow_A,
     slotBackground, slotMemoBackground, slotActiveBackground, 
@@ -208,6 +234,165 @@ function ProfessorNavigator({
 
     return (
         <>  
+            
+            {/* 교수 페이지 슬롯 */}
+            {isVisible &&    
+                (<div className={`professorNavWrapper ${
+                    isCollapsed
+                        ? "collapsed"
+                        : ""
+                }`}
+                style={{"--animateTime":`${animateTime}s cubic-bezier(.16,1,.3,1)`}}
+                onTransitionEnd={() => { if (isCollapsed) { setIsVisible(false); } }}
+                >
+                    <button className="navArrow" onClick={() => scrollBy(-1)}>
+                                ‹
+                        </button>
+                            <div className="professorSlot"
+                            ref={scrollRef}
+                            style={{ }} >
+                                {professorSlots.map(
+                                    (slot, index) => {
+                                        // const isActive =
+                                        // slot?.lecturePage ===
+                                        // `p${currentLectureIndex}`;
+                                        const isActive =
+                                            slot?.lecturePage ===
+                                            currentProfessorPage;
+
+                                        // console.log(slot?.lecturePage, `p${currentLectureIndex}`);
+                                        const slotActive =
+                                        `PDFPageInfo ${isActive
+                                            ? "active"
+                                            : "notActive"
+                                        }`
+
+                                        const background =
+                                            isActive
+                                                ? slotActiveBackground
+                                                : slot?.hasMemo
+                                                ? slotMemoBackground
+                                                : slotBackground;
+
+                                        const ActiveBorder =
+                                            isActive
+                                                ? slotBorder_A
+                                                : slotBorder;
+                                        const ActiveColor =
+                                            isActive
+                                                ? slotColor_A
+                                                : slotColor;
+                                        const ActiveShadow =
+                                            isActive
+                                                ? slotShadow_A
+                                                : "none";
+
+                                        return (
+                                            <NavigationSlot
+                                                style={{
+                                                    "--slot-width": "75px", //clamp(60px, 10vw, 90px) 취소
+                                                    "--slot-ratio": "1 / 1.5",
+                                                    "--slot--bg": background,
+                                                    "--slot--bd": ActiveBorder,
+                                                    "--box-shadow" :ActiveShadow,
+                                                }}
+                                                isActive={isActive}
+                                                isPending={isPending}
+                                                isPDFActive={true}
+                                                key={index}
+                                                disabled={!slot}
+                                                onClick={() =>
+                                                    {
+                                                        if (isPending) return;
+                                                        if (!slot) return;
+                                                        
+                                                        moveProfessorPage(slot.lecturePage);
+                                                        // scrollToIndex(index);
+                                                    }
+                                                }
+                                                isDragOver={
+                                                    dragOverIndex ===
+                                                    index
+                                                }
+                                                draggable
+                                                onDragStart={() => {
+                                                    dragIndexRef.current =
+                                                        index;
+                                                }}
+                                                onDragOver={(e) => {
+                                                    e.preventDefault();
+                                                    setDragOverIndex( index );
+                                                }}
+                                                onDragLeave={() => {
+                                                    setDragOverIndex( null );
+                                                }}
+                                                onDrop={() => {
+                                                    if (isPending) return;
+                                                    const from =
+                                                        dragIndexRef.current;
+
+                                                    swapProfessorPage(
+                                                        from,
+                                                        index
+                                                    );
+
+                                                    dragIndexRef.current =
+                                                        null;
+
+                                                    setDragOverIndex(
+                                                        null
+                                                    );
+                                                }}
+                                            >
+                                                {slot && (
+                                                    <>
+                                                    <div
+                                                        className="PDFPreview"
+                                                        style={{
+                                                            "--slot-color": textColor,
+                                                            "--slot-border": slotBorder,
+                                                            background: "#ffffff77",
+                                                        }}
+                                                    >
+                                                        {pdfThumbnails?.[
+                                                            slot.lecturePage
+                                                        ] && (
+                                                            <img
+                                                                src={
+                                                                    pdfThumbnails[
+                                                                        slot.lecturePage
+                                                                    ]
+                                                                }
+                                                                alt={
+                                                                    slot.lecturePage
+                                                                }
+                                                                draggable={false}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <div className={slotActive} style={{"--slot-color":ActiveColor,}}>
+                                                        <div style={{"--slot-border":ActiveBorder, "--slot-color":ActiveColor,}}>
+                                                            { slot.lecturePage }
+                                                        </div>
+
+                                                        <div className="noteCount" style={{ "--slot-border":ActiveBorder,}} >
+                                                            { slot.noteCount }
+                                                            
+                                                        </div>
+                                                    </div >
+                                                    </>
+                                                )}
+                                            </NavigationSlot>
+                                        );
+                                    }
+                                )}
+                            </div>
+                        <button className="navArrow"
+                            onClick={() => scrollBy(1)}>
+                            ›
+                        </button>
+                    </div>)
+            }
             <div className="professorButtonGroup">
                 {/* 리셋 버튼 */}
                 {(isSort || isDeleteP)
@@ -305,209 +490,73 @@ function ProfessorNavigator({
                             : "⨱"
                     }
                 </button>
+                <div className="spacer" style={{flex:1}}></div>
+                <button
+                    disabled={isAnimating}
+                    onClick={() => {
 
+                        if (isVisible) {
+                            handleCollapse();
+                        }
+                        else {
+                            handleExpand();
+                        }
+                    }}
+                >
+                    {isVisible ? "▴" : "▾"}
+                </button>
                 <div className="spacer" style={{flex:1}}></div>
 
-                    <div
-                    style={{
-                        display: "flex",
-                        gap: "6px",
-                    }}
-                    >
-                        <input
-                            value={pageInput}
-                            disabled={isPending}
-                            placeholder={`${lectureCount}`}
-                            onChange={(e) => {
-
-                                const onlyNumber =
-                                    e.target.value.replace(
-                                        /\D/g,
-                                        ""
-                                    );
-
-                                setPageInput(
-                                    onlyNumber
-                                );
-                            }}
-                            onKeyDown={(e) => {
-
-                                if (
-                                    e.key ===
-                                    "Enter"
-                                ) {
-
-                                    moveProfessorByNumber(
-                                        pageInput
-                                    );
-                                }
-                            }}
-                            style={{
-                                width: "60px",
-                            }}
-                        />
-
-                        <button
+                <div
+                style={{
+                    display: "flex",
+                    gap: "6px",
+                }}
+                >
+                    <input
+                        value={pageInput}
                         disabled={isPending}
-                            onClick={() =>
+                        placeholder={`${lectureCount}`}
+                        onChange={(e) => {
+
+                            const onlyNumber =
+                                e.target.value.replace(
+                                    /\D/g,
+                                    ""
+                                );
+
+                            setPageInput(
+                                onlyNumber
+                            );
+                        }}
+                        onKeyDown={(e) => {
+
+                            if (
+                                e.key ===
+                                "Enter"
+                            ) {
+
                                 moveProfessorByNumber(
                                     pageInput
-                                )
-                            }
-                        >
-                            →
-                        </button>
-                    </div>
-            </div>
-
-            {/* 교수 페이지 슬롯 */}
-            <div className="professorNavWrapper">
-                <button className="navArrow" onClick={() => scrollBy(-1)}>
-                        ‹
-                </button>
-                    <div className="professorSlot"
-                    ref={scrollRef}
-                    style={{ }} >
-                        {professorSlots.map(
-                            (slot, index) => {
-                                // const isActive =
-                                // slot?.lecturePage ===
-                                // `p${currentLectureIndex}`;
-                                const isActive =
-                                    slot?.lecturePage ===
-                                    currentProfessorPage;
-
-                                // console.log(slot?.lecturePage, `p${currentLectureIndex}`);
-                                const slotActive =
-                                `PDFPageInfo ${isActive
-                                    ? "active"
-                                    : "notActive"
-                                }`
-
-                                const background =
-                                    isActive
-                                        ? slotActiveBackground
-                                        : slot?.hasMemo
-                                        ? slotMemoBackground
-                                        : slotBackground;
-
-                                const ActiveBorder =
-                                    isActive
-                                        ? slotBorder_A
-                                        : slotBorder;
-                                const ActiveColor =
-                                    isActive
-                                        ? slotColor_A
-                                        : slotColor;
-                                const ActiveShadow =
-                                    isActive
-                                        ? slotShadow_A
-                                        : "none";
-
-                                return (
-                                    <NavigationSlot
-                                        style={{
-                                            "--slot-width": "75px", //clamp(60px, 10vw, 90px) 취소
-                                            "--slot-ratio": "1 / 1.5",
-                                            "--slot--bg": background,
-                                            "--slot--bd": ActiveBorder,
-                                            "--box-shadow" :ActiveShadow,
-                                        }}
-                                        isActive={isActive}
-                                        isPending={isPending}
-                                        isPDFActive={true}
-                                        key={index}
-                                        disabled={!slot}
-                                        onClick={() =>
-                                            {
-                                                if (isPending) return;
-                                                if (!slot) return;
-                                                
-                                                moveProfessorPage(slot.lecturePage);
-                                                // scrollToIndex(index);
-                                            }
-                                        }
-                                        isDragOver={
-                                            dragOverIndex ===
-                                            index
-                                        }
-                                        draggable
-                                        onDragStart={() => {
-                                            dragIndexRef.current =
-                                                index;
-                                        }}
-                                        onDragOver={(e) => {
-                                            e.preventDefault();
-                                            setDragOverIndex( index );
-                                        }}
-                                        onDragLeave={() => {
-                                            setDragOverIndex( null );
-                                        }}
-                                        onDrop={() => {
-                                            if (isPending) return;
-                                            const from =
-                                                dragIndexRef.current;
-
-                                            swapProfessorPage(
-                                                from,
-                                                index
-                                            );
-
-                                            dragIndexRef.current =
-                                                null;
-
-                                            setDragOverIndex(
-                                                null
-                                            );
-                                        }}
-                                    >
-                                        {slot && (
-                                            <>
-                                            <div
-                                                className="PDFPreview"
-                                                style={{
-                                                    "--slot-color": textColor,
-                                                    "--slot-border": slotBorder,
-                                                    background: "#ffffff77",
-                                                }}
-                                            >
-                                                {pdfThumbnails?.[
-                                                    slot.lecturePage
-                                                ] && (
-                                                    <img
-                                                        src={
-                                                            pdfThumbnails[
-                                                                slot.lecturePage
-                                                            ]
-                                                        }
-                                                        alt={
-                                                            slot.lecturePage
-                                                        }
-                                                        draggable={false}
-                                                    />
-                                                )}
-                                            </div>
-                                            <div className={slotActive} style={{"--slot-color":ActiveColor,}}>
-                                                <div style={{"--slot-border":ActiveBorder, "--slot-color":ActiveColor,}}>
-                                                    { slot.lecturePage }
-                                                </div>
-
-                                                <div className="noteCount" style={{ "--slot-border":ActiveBorder,}} >
-                                                    { slot.noteCount }
-                                                    
-                                                </div>
-                                            </div >
-                                            </>
-                                        )}
-                                    </NavigationSlot>
                                 );
                             }
-                        )}
-                    </div>
-                <button className="navArrow"
-                    onClick={() => scrollBy(1)}>
-                    ›
-                </button>
+                        }}
+                        style={{
+                            width: "60px",
+                        }}
+                    />
+
+                    <button
+                    disabled={isPending}
+                        onClick={() =>
+                            moveProfessorByNumber(
+                                pageInput
+                            )
+                        }
+                    >
+                        →
+                    </button>
+                </div>
             </div>
         </>
     );
