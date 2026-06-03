@@ -13,6 +13,8 @@ function useProfessor({
     setNotePages,
     notePages,
 
+    setPdfThumbnails,
+
     MAX_NOTE_PAGE,
 
     createRollback,
@@ -260,15 +262,24 @@ const duplicateProfessorPage = () => {
             const newPage = `${basePage}(${nextNum})`; 
             // createRollback({ type: "duplicate-professor",
             //     snapshot: { notePages, currentNoteId, professorOrder, }, });
-            
-                const sourceNotes = notePages[ actualPage ] ?? []; 
-                const copiedNotes = sourceNotes.map( ( note, index ) => 
-                    ({ ...note, id: `${newPage}-${index + 1}`, }) ); 
+
+                // 전체 카피모드용으로 주석 남김
+                // const sourceNotes = notePages[ actualPage ] ?? []; 
+                // const copiedNotes = sourceNotes.map( ( note, index ) => 
+                //     ({ ...note, id: `${newPage}-${index + 1}`, }) ); 
                 
+                // note는 빈 페이지 하나 생성
+                const copiedNotes = [{ id: `${newPage}-1`, content: "" }];
+
                 setNotePages( (prev          
                 ) => ({ ...prev, [newPage]: copiedNotes, 
                     }) 
-                ); 
+                );
+                // 썸네일도 복제
+                setPdfThumbnails((prev) => ({
+                    ...prev,
+                    [newPage]: prev[basePage] ?? null,
+                }));
                 
                 setProfessorOrder( (prev        
                 ) => { const idx = prev.indexOf( actualPage );

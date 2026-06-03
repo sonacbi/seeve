@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { Document, Page } from "react-pdf";
 import { pdfjs } from "react-pdf";
 
@@ -73,9 +73,7 @@ function ProfessorViewer(props) {
     
     const isPortrait = pageSize.height > pageSize.width;
 
-    const [scrollPos, setScrollPos] = useState({ x: 0,  });
-
-    const ZOOM_STEP = 0.1;
+    // const ZOOM_STEP = 0.1;
     const MIN_ZOOM = 0.5;
     const MAX_ZOOM = 5;
 
@@ -155,7 +153,7 @@ function ProfessorViewer(props) {
                 handleWheel
             );
         };
-    }, [renderScale, widthScale, baseScale, isFullscreen ] );
+    }, [renderScale, widthScale, baseScale, isFullscreen, fullscreenRef, pdfScreenRef, setZoom ] );
 
     useEffect(() => {
         const resizePdf = () => {
@@ -192,7 +190,7 @@ function ProfessorViewer(props) {
 
         return () =>
             observer.disconnect();
-    }, [isFullscreen]);
+    }, [isFullscreen, fullscreenRef, pdfScreenRef, setContainerSize]);
 
     const renderPDF = (targetRef) => {
         return(
@@ -375,23 +373,51 @@ function ProfessorViewer(props) {
             </div>
         )
     }
-    
+    const getCurrentPercent = () => {
+        const currentScale = renderScale;
+
+        return Math.round( (currentScale / widthScale) * 100 );
+    };
     const zoomIn = () => {
-        setZoom((prev) =>
-            Math.min(
-                prev + ZOOM_STEP,
-                MAX_ZOOM
-            )
-        );
+        const currentPercent =
+            getCurrentPercent();
+
+        const nextPercent =
+            currentPercent % 10 === 0
+                ? currentPercent + 10
+                : Math.ceil(
+                    currentPercent / 10
+                ) * 10;
+
+        const nextZoom =
+            (Math.min(
+                nextPercent,
+                MAX_ZOOM * 100
+            ) / 100) *
+            (widthScale / baseScale);
+
+        setZoom(nextZoom);
     };
 
     const zoomOut = () => {
-        setZoom((prev) =>
-            Math.max(
-                prev - ZOOM_STEP,
-                MIN_ZOOM
-            )
-        );
+        const currentPercent =
+            getCurrentPercent();
+
+        const nextPercent =
+            currentPercent % 10 === 0
+                ? currentPercent - 10
+                : Math.floor(
+                    currentPercent / 10
+                ) * 10;
+
+        const nextZoom =
+            (Math.max(
+                nextPercent,
+                MIN_ZOOM * 100
+            ) / 100) *
+            (widthScale / baseScale);
+
+        setZoom(nextZoom);
     };
 
     const goPrevLecture =

@@ -11,6 +11,18 @@ function NotePanel(props) {
     } = props;
     const {textColor, iconColor} = colorPalette(!isDark);
 
+    const openNotepad = () => {
+        // window.location.href =
+        // "shell:AppsFolder\\Microsoft.WindowsNotepad_8wekyb3d8bbwe!App";
+        console.log("메모장 켜보기");
+    };
+
+    const openPaint = () => {
+        // window.location.href =
+        // "shell:AppsFolder\\Microsoft.MSPaint_8wekyb3d8bbwe!App";
+        console.log("그림판 켜보기");
+    };
+
     return (
         <>
             <h2 className="areaHeader" style={{"display" : "flex", "--header-color" : textColor,}}>
@@ -20,6 +32,15 @@ function NotePanel(props) {
                 <span className="logue">logue</span>
             </span>
             <span className="pageCount">{totalNoteCount}개 노트</span>
+            <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
+                <button onClick={openNotepad}>
+                    메모장
+                </button>
+
+                <button onClick={openPaint}>
+                    그림판
+                </button>
+            </div>
             </h2>
 
             <NoteNavigator {...props}  />

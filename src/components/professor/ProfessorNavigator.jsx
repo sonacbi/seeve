@@ -11,18 +11,20 @@ function ProfessorNavigator({
     
     setNotePages,
     notePages,
+    
     flattenedNotes,
     // setCurrentNoteIndex,
     setCurrentNoteId,
     currentNoteId,
     currentLectureIndex,
-
+    
     professorOrder,
     setProfessorOrder,
-
+    
     mode,
     rollback,
-
+    
+    setPdfThumbnails,
     pdfThumbnails,
 }) {
     const {textColor, slotBorder, slotBorder_A, slotColor, slotColor_A,
@@ -48,6 +50,9 @@ function ProfessorNavigator({
             lectureCount, 
             notePages,
             setNotePages, 
+
+            setPdfThumbnails,
+
             flattenedNotes, 
             setCurrentNoteId, 
             currentNoteId, 

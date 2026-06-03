@@ -24,6 +24,7 @@ function ProfessorPanel(props) {
 
             <ProfessorNavigator {...props}
             pdfThumbnails={pdfThumbnails}
+            setPdfThumbnails={setPdfThumbnails}
                 />
 
             <h1>
