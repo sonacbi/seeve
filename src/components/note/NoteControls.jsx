@@ -110,6 +110,7 @@ const {
 
             <NoteEditor 
                 setNotePages={setNotePages}
+                notePages={notePages}
                 currentNote={currentNote}
             />
 

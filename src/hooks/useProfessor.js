@@ -20,26 +20,7 @@ function useProfessor({
     createRollback,
 }) { 
   //ProfessorNavigator
-  
-    // 교수 네비 슬롯
-    // const professorSlots = [];
 
-    // for (
-    //     let lectureIndex = 1;
-    //     lectureIndex <= lectureCount;
-    //     lectureIndex++
-    // ) {
-    //     const lectureKey = `p${lectureIndex}`;
-    //     const notes = notePages[lectureKey] || [];
-
-    //     professorSlots.push({
-    //         lecturePage: lectureKey,
-    //         noteCount: notes.length,
-    //         hasMemo: notes.some(
-    //             (n) => n.content.trim() !== ""
-    //         ),
-    //     });
-    // }
 
     const professorSlots =
     professorOrder.map(
@@ -54,11 +35,25 @@ function useProfessor({
                 lecturePage,
                 noteCount:
                     notes.length,
-                hasMemo:
-                    notes.some(
-                        (n) =>
-                            n.content.trim() !== ""
-                    ),
+                hasMemo: notes.some(note =>
+                    note.cells &&
+                    Object.values(note.cells).some(cell => {
+                        if (cell.type === "text") {
+                            return cell.content?.trim().length > 0;
+                        }
+
+                        if (cell.type === "formula") {
+                            return cell.latex?.trim().length > 0;
+                        }
+
+                        if (cell.type === "image") {
+                            return !!cell.imageData;
+                        }
+
+                        return false;
+                    })
+                ),
+
             };
         }
     );
@@ -269,7 +264,7 @@ const duplicateProfessorPage = () => {
                 //     ({ ...note, id: `${newPage}-${index + 1}`, }) ); 
                 
                 // note는 빈 페이지 하나 생성
-                const copiedNotes = [{ id: `${newPage}-1`, content: "" }];
+                const copiedNotes = [{ id: `${newPage}-1`, cells: {} }];
 
                 setNotePages( (prev          
                 ) => ({ ...prev, [newPage]: copiedNotes, 
@@ -297,13 +292,14 @@ const duplicateProfessorPage = () => {
             const currentPage =
                 professorOrder.find(
                     (page) =>
-                        notePages[
-                            page
-                        ]?.some(
-                            (note) =>
-                                note.id ===
-                                currentNoteId
-                        )
+                        // notePages[
+                        //     page
+                        // ]?.some(
+                        //     (note) =>
+                        //         note.id ===
+                        //         currentNoteId
+                        // )
+                        notePages[page]?.some(note => note.id === currentNoteId)
                 );
 
             if (!currentPage)

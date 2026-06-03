@@ -19,7 +19,8 @@ function useStudyDeskState() {
         for ( let i = 1; i <= count; i++ ) {
             pages[`p${i}`] = [{
                 id: `p${i}-1`,
-                content: "",
+                // content: "",
+                cells: {},
                 },
             ];
         }
@@ -77,11 +78,15 @@ function useStudyDeskState() {
 
     }, [lectureCount]);
 
-    const totalNoteCount = /*flattenedNotes.length;*/
-        flattenedNotes.filter(
-            note => note.content.trim().length > 0
-        ).length;
+    // const totalNoteCount = /*flattenedNotes.length;*/
+    //     flattenedNotes.filter(
+    //         note => note.content.trim().length > 0
+    //     ).length;
     
+    const totalNoteCount = flattenedNotes.filter(
+        n => n.cells && Object.keys(n.cells).length > 0
+    ).length
+
     // 현재 노트 id를 갖고 flattend 맵에서 찾는다. 없다면 첫페이지를 반환
     const currentNote = flattenedNotes.find( (note) => note.id === currentNoteId ) ?? flattenedNotes[0];
     // 현재 pdf에 대응되는 현 노트
