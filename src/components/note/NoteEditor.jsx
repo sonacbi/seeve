@@ -10,7 +10,8 @@ function NoteEditor({
 // SETTER (UI STATE)
 // =========================
 const [activeCell, setActiveCell] = useState(null);
-const [draft, setDraft] = useState("");
+const draftRef = useRef("");
+// const [draft, setDraft] = useState(""); // flush
 const [createMode, setCreateMode] = useState(false);
 const [selectedCellId, setSelectedCellId] = useState(null);
 
@@ -38,9 +39,14 @@ const note = useMemo(() => {
 //     ?.find(n => n.id === currentNote.id);
 // }, [setNotePages, currentNote]);
 
+const cellMap = useMemo(() => {
+  return note?.cells ?? {};
+}, [note?.cells]);
+
 // cell getter
 const getCell = (row, col) =>
-  note?.cells?.[`${row}-${col}`] ?? null;
+//   note?.cells?.[`${row}-${col}`] ?? null;
+  cellMap[`${row}-${col}`] ?? null;
 
 // active value
 const activeValue = activeCell
@@ -138,12 +144,15 @@ const updateCell = (cellId, patch) => {
 const commitDraft = () => {
   if (!activeCell) return;
 
+  const value = draftRef.current;
+
   updateCellValue(
     activeCell.row,
     activeCell.col,
-    draft
+    value
   );
-  setDraft("");
+
+  draftRef.current = "";
 };
 
 // setter update 혼합
@@ -209,12 +218,24 @@ const createCell = (type) => {
     // });
 };
 
-useEffect(() => {
-    if (!activeCell) return;
-    const cell = getCell(activeCell.row, activeCell.col);
-    setDraft(cell?.content ?? "");
+// useEffect(() => {
+//     if (!activeCell) return;
+//     const cell = getCell(activeCell.row, activeCell.col);
+//     setDraft(cell?.content ?? "");
   
-}, [activeCell, notePages]);
+// }, [activeCell, notePages]);
+
+useEffect(() => {
+  if (!activeCell) return;
+
+  const cell = cellMap[`${activeCell.row}-${activeCell.col}`];
+  const value = cell?.content ?? "";
+  draftRef.current = value;
+
+  if (inputRef.current) {
+    inputRef.current.value = value; // DOM 직접 세팅
+  }
+}, [activeCell, cellMap]);
 
 // useEffect(() => {
 //   if (!activeCell) return;
@@ -240,7 +261,17 @@ const COLS = 12;
 //     col: 0,
 // });
 const moveCell = (dr, dc) => {
-    commitDraft();
+    if (activeCell) {
+        const value = draftRef.current;
+
+        updateCellValue(
+        activeCell.row,
+        activeCell.col,
+        value
+        );
+
+        draftRef.current = "";
+    }
 
     setActiveCell(prev => {
         if (!prev) return prev;
@@ -558,7 +589,7 @@ const currentValue =
                 {Array.from({ length: ROWS }).map((_, row) =>
                 Array.from({ length: COLS }).map((_, col) => {
                     const cell = getCell(row, col);
-                    const key = `${row}-${col}-${cell?.content ?? ""}`;
+                    const key = `${row}-${col}`;
 
                     return (
                     <Cell
@@ -574,23 +605,23 @@ const currentValue =
                 <textarea
                     className="floating-editor"
                     autoFocus
-onKeyDown={(e) => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      commitDraft();
-      moveCell(0, e.shiftKey ? -1 : 1);
-      return;
-    }
+                    onKeyDown={(e) => {
+                        if (e.key === "Tab") {
+                        e.preventDefault();
 
-    if (e.key === "Enter") {
-      e.preventDefault();
-      commitDraft();
-      moveCell(e.shiftKey ? -1 : 1, 0);
-      return;
-    }
-  }}
+                        moveCell(0, e.shiftKey ? -1 : 1);
+                        return;
+                        }
+
+                        if (e.key === "Enter") {
+                        e.preventDefault();
+
+                        moveCell(e.shiftKey ? -1 : 1, 0);
+                        return;
+                        }
+                    }}
                     ref={inputRef}
-                    value={draft}
+                    // value={draftRef}
                     style={{
                         position: "absolute",
                         top: pos.top,
@@ -600,7 +631,7 @@ onKeyDown={(e) => {
                         margin: 0,
                         transform: "translate(0,0)"
                     }}
-                    onChange={(e) => setDraft(e.target.value)}
+                    onChange={(e) => {draftRef.current = e.target.value;}}
                     onBlur={() => {commitDraft(); setActiveCell(null);}}
                     />
                 )}
