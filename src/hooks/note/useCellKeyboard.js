@@ -1,0 +1,225 @@
+import { useCallback, useEffect } from "react";
+
+export function useCellKeyboard({
+    moveCell,
+    inputRef,
+    activeCell,
+    setActiveCell,
+    applyToSelectedCell,
+    cellMap,
+    draftRef,
+}) {
+// =========================
+// GETTER (READ ONLY)
+// =========================
+
+
+
+
+// =========================
+// UPDATE (CELL)
+// =========================
+
+const moveCellWithFocus = useCallback((dr, dc) => {
+    moveCell(dr, dc);
+
+    requestAnimationFrame(() => {
+        inputRef.current?.focus();
+    });
+}, [moveCell, inputRef]);
+
+// 셀 이동 전용
+useEffect(() => {
+    const handleMoveKeyDown = (e) => {
+        if (!activeCell) return;
+
+        // textarea 편집 중이면 무시
+        if (document.activeElement?.tagName === "TEXTAREA") {
+        return;
+        }
+
+        switch (e.key) {
+        case "ArrowRight":
+            e.preventDefault();
+            moveCellWithFocus(0, 1);
+            return;
+
+        case "ArrowLeft":
+            e.preventDefault();
+            moveCellWithFocus(0, -1);
+            return;
+
+        case "ArrowDown":
+            e.preventDefault();
+            moveCellWithFocus(1, 0);
+            return;
+
+        case "ArrowUp":
+            e.preventDefault();
+            moveCellWithFocus(-1, 0);
+            return;
+
+        case "Tab":
+            e.preventDefault();
+            moveCell(0, e.shiftKey ? -1 : 1);
+            return;
+
+        case "Enter":
+            e.preventDefault();
+            moveCell(e.shiftKey ? -1 : 1, 0);
+            return;
+
+        default:
+            return;
+        }
+    };
+
+    window.addEventListener("keydown", handleMoveKeyDown);
+
+    return () => {
+        window.removeEventListener(
+        "keydown",
+        handleMoveKeyDown
+        );
+    };
+    }, [
+    activeCell, moveCell, moveCellWithFocus
+]);
+
+useEffect(() => {
+    console.log("mode:", activeCell?.mode);
+}, [activeCell?.mode]);
+    useEffect(() => {
+        const handleCommandKeyDown = (e) => {
+            if (!activeCell) return;
+
+            // Ctrl + Space
+            if (
+            activeCell.mode === "select" &&
+            e.ctrlKey &&
+            e.code === "Space"
+            ) {
+            e.preventDefault();
+
+            setActiveCell(prev => ({
+                ...prev,
+                mode: "command"
+            }));
+
+            return;
+            }
+
+            if (activeCell.mode !== "command") return;
+
+            const key = e.key.toLowerCase();
+
+            switch (key) {
+            case "f": {
+                applyToSelectedCell("formula");
+                break;
+            }
+
+            case "i": {
+                applyToSelectedCell("image");
+                
+                break;
+            }
+
+            case "g": {
+                applyToSelectedCell("graph");
+                
+                break;
+            }
+
+            case "m": {
+                applyToSelectedCell("mindmap");
+                break;
+            }
+
+            case "escape":
+                break;
+
+            default:
+                return;
+            }
+
+            setActiveCell(prev => ({
+            ...prev,
+            mode: "select"
+            }));
+        };
+
+        window.addEventListener(
+            "keydown",
+            handleCommandKeyDown
+        );
+
+        return () =>
+            window.removeEventListener(
+            "keydown",
+            handleCommandKeyDown
+            );
+}, [ setActiveCell, activeCell, applyToSelectedCell ]);
+
+useEffect(() => {
+    const handleEditStart = (e) => {
+        if (!activeCell) return;
+
+        if (activeCell.mode !== "select") return;
+
+        if ( document.activeElement?.tagName === "TEXTAREA" ) { return; }
+        
+        const rowSpecialCell = cellMap[`${activeCell?.row}-0`];
+
+        const isSpecialRow =
+            rowSpecialCell &&
+            rowSpecialCell.type !== "text";
+
+        if (isSpecialRow) { return;}
+
+        const isPrintable =
+        e.key.length === 1 ||
+        e.key === "Backspace";
+
+        if (!isPrintable) return;
+
+        e.preventDefault();
+
+        setActiveCell(prev => ({
+        ...prev,
+        mode: "edit"
+        }));
+
+        draftRef.current =
+        e.key === "Backspace"
+            ? ""
+            : e.key;
+
+        requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        });
+    };
+
+    window.addEventListener(
+        "keydown",
+        handleEditStart
+    );
+
+    return () =>
+        window.removeEventListener(
+        "keydown",
+        handleEditStart
+        );
+    }, [
+    draftRef,
+    inputRef,
+    setActiveCell,
+    activeCell,
+    cellMap,
+    // draftRef
+]);
+  return { 
+    moveCellWithFocus,
+    
+   };
+}
