@@ -8,12 +8,23 @@ export function useCellKeyboard({
     applyToSelectedCell,
     cellMap,
     draftRef,
+    setIsEdit,
+    isEdit,
 }) {
+
 // =========================
 // GETTER (READ ONLY)
 // =========================
+const autoEdit = useCallback((isEdit) => {
+    if (!isEdit) return;
 
-
+    requestAnimationFrame(() => {
+        setActiveCell(prev => ({
+            ...prev,
+            mode: "edit",
+        }));
+    });
+}, [setActiveCell]);
 
 
 // =========================
@@ -30,6 +41,7 @@ const moveCellWithFocus = useCallback((dr, dc) => {
 
 // 셀 이동 전용
 useEffect(() => {
+    
     const handleMoveKeyDown = (e) => {
         if (!activeCell) return;
 
@@ -62,11 +74,14 @@ useEffect(() => {
         case "Tab":
             e.preventDefault();
             moveCell(0, e.shiftKey ? -1 : 1);
+            autoEdit(isEdit);
             return;
 
         case "Enter":
             e.preventDefault();
+            e.stopPropagation();
             moveCell(e.shiftKey ? -1 : 1, 0);
+            autoEdit(isEdit);
             return;
 
         default:
@@ -83,7 +98,7 @@ useEffect(() => {
         );
     };
     }, [
-    activeCell, moveCell, moveCellWithFocus
+    setActiveCell, activeCell, moveCell, moveCellWithFocus, autoEdit, isEdit
 ]);
 
 useEffect(() => {
@@ -114,6 +129,13 @@ useEffect(() => {
             const key = e.key.toLowerCase();
 
             switch (key) {
+            case "s": {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsEdit(!isEdit);
+                autoEdit(isEdit);
+                break;
+            }
             case "f": {
                 applyToSelectedCell("formula");
                 break;
@@ -137,6 +159,13 @@ useEffect(() => {
             }
 
             case "escape":
+setActiveCell(prev => {
+  console.log("ESC prev:", prev);
+  return {
+    ...prev,
+    mode: "select",
+  };
+});
                 break;
 
             default:
@@ -159,13 +188,15 @@ useEffect(() => {
             "keydown",
             handleCommandKeyDown
             );
-}, [ setActiveCell, activeCell, applyToSelectedCell ]);
+}, [ setActiveCell, activeCell, applyToSelectedCell, autoEdit, isEdit, setIsEdit ]);
 
 useEffect(() => {
     const handleEditStart = (e) => {
         if (!activeCell) return;
 
         if (activeCell.mode !== "select") return;
+
+        if (e.key === "Enter") return;
 
         if ( document.activeElement?.tagName === "TEXTAREA" ) { return; }
         
@@ -180,7 +211,7 @@ useEffect(() => {
         const isPrintable =
         e.key.length === 1 ||
         e.key === "Backspace";
-
+        if (e.key === "Enter") return;
         if (!isPrintable) return;
 
         e.preventDefault();
@@ -220,6 +251,6 @@ useEffect(() => {
 ]);
   return { 
     moveCellWithFocus,
-    
+    autoEdit,
    };
 }

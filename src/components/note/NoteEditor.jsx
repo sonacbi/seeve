@@ -14,6 +14,8 @@ function NoteEditor({
     setNotePages,
     notePages,
     currentNote,
+    setIsEdit,
+    isEdit,
 }) {
 const inputRef = useRef(null);
 const ROWS = 40;
@@ -125,7 +127,9 @@ const { moveCell } = useCellNavigation({
   COLS
 });
 
-const { moveCellWithFocus } =useCellKeyboard({
+const { moveCellWithFocus,
+    autoEdit
+ } =useCellKeyboard({
     moveCell,
     inputRef,
     activeCell,
@@ -133,6 +137,8 @@ const { moveCellWithFocus } =useCellKeyboard({
     applyToSelectedCell,
     cellMap,
     draftRef,
+    setIsEdit,
+    isEdit,
 });
 
     // const createFormulaCell = () =>
@@ -276,7 +282,7 @@ const pos = activeCell
                         isActive={ cell?.col === 0 && cell?.colSpan > 1 ?
                             activeCell?.row === row : ( activeCell?.row === row && activeCell?.col === col )
                         }
-                        onClick={() => setActiveCell({ row, col, mode: "select" })}
+                        onClick={() => {setActiveCell({ row, col, mode: "select" }); autoEdit(isEdit);}}
                         onDoubleClick={() => enterEditMode(row, col)}
                     />
                 ))}
@@ -285,10 +291,27 @@ const pos = activeCell
                     className="floating-editor"
                     autoFocus
                     onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                            e.preventDefault();
+
+                            requestAnimationFrame(() => {
+                                setActiveCell(prev => {
+                                console.log("ESC prev:", prev);
+                                return {
+                                    ...prev,
+                                    mode: "select",
+                                };
+                                });
+                            });
+
+                            inputRef.current?.blur?.();
+                            return;
+                        }
                         if (e.key === "Tab") {
                         e.preventDefault();
                         e.stopPropagation();
                         moveCellWithFocus(0, e.shiftKey ? -1 : 1);
+                        autoEdit(isEdit);
                         return;
                         }
 
@@ -296,6 +319,7 @@ const pos = activeCell
                         e.preventDefault();
                         e.stopPropagation();
                         moveCellWithFocus(e.shiftKey ? -1 : 1, 0);
+                        autoEdit(isEdit);
                         return;
                         }
                     }}
@@ -311,7 +335,7 @@ const pos = activeCell
                         transform: "translate(0,0)"
                     }}
                     onChange={(e) => {draftRef.current = e.target.value;}}
-                    onBlur={() => {commitDraft(); setActiveCell(null);}}
+                    onBlur={() => {commitDraft(); }}
                     />
                 )}
             </div>

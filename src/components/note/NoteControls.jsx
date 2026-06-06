@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import NoteEditor from "./NoteEditor";
 import useStudyDesk from "../../hooks/useStudyDesk";
 
@@ -47,6 +49,7 @@ const {
     isDelete, isDeleteP, isReset, isSort,
     isPending,
 } = mode;
+const [isEdit, setIsEdit] = useState(false);
 
     return (
         <>
@@ -103,15 +106,21 @@ const {
             </div>
 
             <h3
-            style={{ marginTop: 20, }}
+            style={{ marginTop: 20, display: "flex", flexDirection: "row", alignItems:"baseline", justifyContent:"space-between"}}
             >
             {currentNote.id}
+                <div className="noteButtonGroup">
+                    <button style={{cursor:"none"}}>{isEdit ? "Editor" : "Selector"}</button>
+                    <button style={{padding : "0px 10px", width:"max-content"}} onClick={()=>setIsEdit(!isEdit)}>{isEdit ? "선택 모드로" : "편집 모드로"}</button>
+                </div>
             </h3>
 
             <NoteEditor 
                 setNotePages={setNotePages}
                 notePages={notePages}
                 currentNote={currentNote}
+                setIsEdit={setIsEdit}
+                isEdit={isEdit}
             />
 
             <div
