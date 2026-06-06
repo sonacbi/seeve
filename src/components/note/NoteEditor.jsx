@@ -10,6 +10,11 @@ function NoteEditor({
     currentNote,
 }) {
 const inputRef = useRef(null);
+const hiddenInputRef = useRef(null);
+const pendingInputRef = useRef("");
+const isComposingRef = useRef(false);
+const compositionBufferRef = useRef("");
+
 const ROWS = 40;
 const COLS = 6;
 
@@ -18,6 +23,7 @@ const COLS = 6;
 // =========================
 // const [activeCell, setActiveCell] = useState(null);
 const { draftRef, /*setDraft,*/ clearDraft } = useDraft();
+const [, forceRender] = useState(0);
 const [mode, setMode] = useState("select");
 
 const [activeCell, setActiveCell] = useState({
@@ -159,17 +165,17 @@ const createCell = (type) => {
 
 };
 
-useEffect(() => {
-  if (!activeCell) return;
+// useEffect(() => {
+//   if (!activeCell) return;
 
-  const cell = cellMap[`${activeCell.row}-${activeCell.col}`];
-  const value = cell?.content ?? "";
-  draftRef.current = value;
+//   const cell = cellMap[`${activeCell.row}-${activeCell.col}`];
+//   const value = cell?.content ?? "";
+//   draftRef.current = value;
 
-  if (inputRef.current) {
-    inputRef.current.value = value; // DOM 직접 세팅
-  }
-}, [activeCell, cellMap]);
+//   if (inputRef.current) {
+//     inputRef.current.value = value; // DOM 직접 세팅
+//   }
+// }, [activeCell, cellMap]);
 
 // useEffect(() => {
 //   if (!activeCell || !inputRef.current) return;
@@ -424,58 +430,150 @@ useEffect(() => {
     ]);
 
     useEffect(() => {
-    const handleEditStart = (e) => {
-        if (!activeCell) return;
+    const editor = editorRef.current;
+    if (!editor) return;
+ 
 
+    const handleEditStart = (e) => {
+           console.log(
+                "beforeinput",
+                e.data,
+                e.isComposing,
+                isComposingRef.current
+            );
+        
+        if (!activeCell) return;
         if (activeCell.mode !== "select") return;
 
-        if ( document.activeElement?.tagName === "TEXTAREA" ) { return; }
-        
-        const rowSpecialCell = cellMap[`${activeCell?.row}-0`];
+        const rowSpecialCell =
+            cellMap[`${activeCell.row}-0`];
 
         const isSpecialRow =
             rowSpecialCell &&
             rowSpecialCell.type !== "text";
 
-        if (isSpecialRow) { return;}
+        if (isSpecialRow) return;
 
-        const isPrintable =
-        e.key.length === 1 ||
-        e.key === "Backspace";
+        // 1. 입력값 먼저 확보
+        // const input = e.data ?? "";
 
-        if (!isPrintable) return;
+        const key = `${activeCell.row}-${activeCell.col}`;
+        const cell = cellMap[key];
 
-        e.preventDefault();
+        // 기존값
+        draftRef.current = cell?.content ?? "";
 
-        setActiveCell(prev => ({
-        ...prev,
-        mode: "edit"
-        }));
+        // const nativeEvent = e;
+
+        // if (
+        //     !nativeEvent.isComposing &&
+        //     e.data &&
+        //     e.data.length === 1
+        // ) {
+        //     pendingInputRef.current = e.data;
+        // } else {
+        //     pendingInputRef.current = "";
+        // }
+// if (e.isComposing || isComposingRef.current) {
+//     return;
+// }
+        // 2. edit 진입
+        // setActiveCell({
+        //     row: activeCell.row,
+        //     col: activeCell.col,
+        //     mode: "edit"
+        // });
+        requestAnimationFrame(() => {
+    hiddenInputRef.current?.focus();
+});
+
+    requestAnimationFrame(() => {
+        if (!inputRef.current) return;
+
+        inputRef.current.value =
+            hiddenInputRef.current.value;
 
         draftRef.current =
-        e.key === "Backspace"
-            ? ""
-            : e.key;
+            hiddenInputRef.current.value;
+        
+        // 버퍼 사용 끝
+        hiddenInputRef.current.value = "";
 
-        requestAnimationFrame(() => {
-        inputRef.current?.focus();
-        });
+        // inputRef.current.focus();
+    });
+
+        e.preventDefault();
     };
 
-    window.addEventListener(
-        "keydown",
-        handleEditStart
-    );
+    editor.addEventListener("beforeinput", handleEditStart);
 
     return () =>
-        window.removeEventListener(
-        "keydown",
-        handleEditStart
-        );
-    }, [
-    activeCell,
-    draftRef
-    ]);
+        editor.removeEventListener("beforeinput", handleEditStart);
+}, [activeCell, cellMap]);
+
+    // useEffect(() => {
+    //     if (
+    //         activeCell?.mode === "edit" &&
+    //         inputRef.current
+    //     ) {
+    //         // inputRef.current.value = draftRef.current; // 직접 변경 삭제
+
+    //         inputRef.current.focus();
+    //     }
+    // }, [activeCell]);
+
+    useEffect(() => {
+        console.log("mode:", activeCell?.mode);
+    }, [activeCell?.mode]);
+
+    useEffect(() => {
+        if (
+            activeCell &&
+            activeCell.mode === "select"
+        ) {
+            hiddenInputRef.current?.focus();
+        }
+    }, [activeCell]);
+
+    useEffect(() => {
+    if (
+        activeCell?.mode !== "edit" ||
+        !inputRef.current
+    ) {
+        return;
+    }
+
+    requestAnimationFrame(() => {
+
+        if (!inputRef.current) return;
+        // 한글 조합중이면 포커스 이동 금지
+        if (isComposingRef.current) {
+            return;
+        }
+
+        // inputRef.current.focus();
+
+const buffer =
+    compositionBufferRef.current;
+
+if (buffer) {
+
+    const value =
+        draftRef.current +
+        buffer;
+
+    draftRef.current = value;
+
+    inputRef.current.value =
+        value;
+
+    compositionBufferRef.current = "";
+
+    hiddenInputRef.current.value = "";
+}
+    });
+
+}, [activeCell]);
 
     // const createFormulaCell = () =>
     //     createCell("formula");
@@ -611,6 +709,71 @@ const pos = activeCell
                     height: "100%",
                 }}
                 >
+
+                {/* beforinput 저장용 */}
+<textarea
+    ref={hiddenInputRef}
+    style={{
+        position: "absolute",
+        opacity: 0,
+        pointerEvents: "none",
+        width: 1,
+        height: 1
+    }}
+onFocus={() => {
+    console.log("hidden focus");
+}}
+
+onBlur={() => {
+    console.log("hidden blur");
+}}
+onCompositionStart={(e) => {
+    console.log(
+        "hidden start value:",
+        e.currentTarget.value
+    );
+
+    isComposingRef.current = true;
+}}
+
+onCompositionUpdate={(e) => {
+    console.log("hidden update", e.currentTarget.value);
+    const value =
+        e.currentTarget.value;
+
+    compositionBufferRef.current =
+    value;
+
+    if (inputRef.current) {
+        inputRef.current.value = value;
+    }
+
+    // forceRender(v => v + 1);
+}}
+
+onCompositionEnd={(e) => {
+console.log("hidden end", e.currentTarget.value);
+    isComposingRef.current = false;
+
+    const composed =
+        e.currentTarget.value;
+
+    compositionBufferRef.current =
+        composed;
+
+    setActiveCell(prev => ({
+        ...prev,
+        mode: "edit"
+    }));
+}}
+
+    onInput={(e) => {
+
+    compositionBufferRef.current =
+        e.currentTarget.value;
+}}
+/>
+
                 {grid.map(({ key, row, col, cell, pos_width, gridrows }) => (
                     <Cell
                         key={key}
@@ -626,6 +789,16 @@ const pos = activeCell
                 <textarea
                     className="floating-editor"
                     autoFocus
+                    
+                    onCompositionStart={() => {
+                        console.log("floating start");
+    isComposingRef.current = true;
+}}
+
+onCompositionEnd={() => {
+    console.log("floating end");
+    isComposingRef.current = false;
+}}
                     onKeyDown={(e) => {
                         if (e.key === "Tab") {
                         e.preventDefault();
@@ -641,8 +814,16 @@ const pos = activeCell
                         return;
                         }
                     }}
+                    onFocus={() => {
+    console.log("floating focus");
+}}
+
+onBlur={() => {
+    console.log("floating blur");
+}}
+                    // defaultValue={draftRef.current}
                     ref={inputRef}
-                    // value={draftRef}
+                    // value={draftRef.current}
                     style={{
                         position: "absolute",
                         top: pos.top,
@@ -652,8 +833,28 @@ const pos = activeCell
                         margin: 0,
                         transform: "translate(0,0)"
                     }}
-                    onChange={(e) => {draftRef.current = e.target.value;}}
-                    onBlur={() => {commitDraft(); setActiveCell(null);}}
+                    onChange={(e) => {
+
+    draftRef.current =
+        e.target.value;
+
+    // forceRender(v => v + 1);
+}}
+                    onBlur={() => {
+console.log(
+        "floating blur",
+        document.activeElement
+    );
+    commitDraft();
+
+    if (hiddenInputRef.current) {
+        hiddenInputRef.current.value = "";
+    }
+
+    pendingInputRef.current = "";
+
+    setActiveCell(null);
+}}
                     />
                 )}
             </div>
