@@ -6,7 +6,10 @@ function FileList({
     onAnimationEnd,
     setPdfFile,
     pdfFile,
-    setLectureCount
+    setLectureCount,
+    setNotePages,
+    setCurrentNoteId,
+    setPdfName,
 }) {
 
     const fileInputRef =
@@ -23,8 +26,14 @@ function FileList({
         );
 
         if (!file) return;
+        // 기존 노트 완전 삭제
+        setNotePages({
+            p1: [{ id: "p1-1", cells: {}, }],
+        });
 
+        setCurrentNoteId("p1-1");
         setPdfFile(file);
+        setPdfName(file.name);
         setIsOpen(false);
     };
 

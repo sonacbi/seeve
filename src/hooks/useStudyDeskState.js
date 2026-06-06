@@ -4,6 +4,8 @@ function useStudyDeskState() {
 
     // 불러온 pdf 파일 -> preview와 screen에 호출할 데이터
     const [pdfFile, setPdfFile] = useState(null);
+    // 파일 이름 세팅용. 처음엔 pdf 파일을 그대로 불러오고 나중에 사용자가 직접 다른 이름으로 저장할 땐 그 이름으로 바뀜.
+    const [pdfName, setPdfName] = useState(null); 
     
     // 챕터(pdf 페이지 수) 표기용. 안전장치로 최소 1페이지 세팅
     const [lectureCount, setLectureCount] = useState(1);
@@ -61,7 +63,7 @@ function useStudyDeskState() {
                 if ( !next[key] ) {
                     next[key] = [{
                         id: `${key}-1`,
-                        content: "",
+                        cells: {},
                     },];
                 }
             }
@@ -101,6 +103,7 @@ function useStudyDeskState() {
 
     return {
         pdfFile, setPdfFile,
+        pdfName, setPdfName,
         lectureCount, setLectureCount,
         MAX_NOTE_PAGE,
         currentNoteId, setCurrentNoteId,

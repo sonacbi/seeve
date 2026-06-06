@@ -6,7 +6,8 @@ function FileSetting(props) {
     const {isDark, colorPalette} = props;
     const {textColor, iconColor} = colorPalette(!isDark);
     const {isOpen, setIsOpen} = props;
-    const {setPdfFile, pdfFile} = props;
+    const { pdfName } = props;
+
 
     const [shouldRender, setShouldRender] =
         useState(isOpen);
@@ -28,7 +29,8 @@ function FileSetting(props) {
 
             <div id="saveName" style={{"--file-filter" : textColor}}>
                 <Flame style={{ width : "15px", "--file-filter" : iconColor}} />
-                강의 자료 학습
+                {!pdfName ? "강의 자료 학습" : pdfName}
+                {/* 강의 자료 학습 */}
             </div>
 
             <button
@@ -43,13 +45,12 @@ function FileSetting(props) {
 
             {shouldRender && (
                 <FileList
+                    {...props}
                     setIsOpen={setIsOpen}
                     isOpen={isOpen}
                     onAnimationEnd={
                         closeAnimationEnd
                     }
-                    pdfFile={pdfFile}
-                    setPdfFile={setPdfFile}
                 />
             )}
         </div>

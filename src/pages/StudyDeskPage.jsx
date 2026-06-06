@@ -11,6 +11,7 @@ import colorPalette from "../styles/color";
 function StudyDeskPage() {
     const {
         pdfFile, setPdfFile,
+        pdfName, setPdfName,
         lectureCount, setLectureCount,
         MAX_NOTE_PAGE,
         currentNoteId, setCurrentNoteId,
@@ -58,9 +59,13 @@ function StudyDeskPage() {
                 setIsDark={setIsDark}
                 colorPalette={colorPalette}
 
-                pdfFile={pdfFile}
-                setPdfFile={setPdfFile}
+                pdfFile={pdfFile} setPdfFile={setPdfFile}
+                pdfName={pdfName} setPdfName={setPdfName}
+                
                 setLectureCount={ setLectureCount }
+                setNotePages={ setNotePages }
+                setCurrentNoteId={ setCurrentNoteId }
+
             />
 
             <div id="flexWrap">
