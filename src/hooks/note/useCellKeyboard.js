@@ -192,6 +192,9 @@ setActiveCell(prev => {
 
 useEffect(() => {
     const handleEditStart = (e) => {
+        if (e.ctrlKey || e.metaKey) { // CTRL+C
+            return;
+        }
         if (!activeCell) return;
 
         if (activeCell.mode !== "select") return;

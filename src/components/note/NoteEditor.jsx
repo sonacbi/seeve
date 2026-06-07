@@ -9,6 +9,7 @@ import {useNoteGrid} from "../../hooks/note/useNoteGrid";
 import {useCellMutations} from "../../hooks/note/useCellMutations";
 import {useCellEditor} from "../../hooks/note/useCellEditor";
 import {useCellKeyboard} from "../../hooks/note/useCellKeyboard";
+import { useClipboard } from "../../hooks/note/useClipboard";
 
 function NoteEditor({
     setNotePages,
@@ -59,6 +60,7 @@ const {
 // =========================
 // UPDATE (CELL)
 // =========================
+
 const { updateCellValue } = useCellUpdater(setNotePages, currentNote);
 
 const {
@@ -66,10 +68,50 @@ const {
     enterEditMode,
     draftRef, /*setDraft, clearDraft, */
     activeCell, setActiveCell,
+    dragging, setDragging,
+    selection, setSelection,
+    getRange,
+    isSelected,
 } =useCellEditor({
     inputRef,
     updateCellValue,
+    cellMap,
 });
+
+const {} = useClipboard({
+    selection,
+    getRange,
+    cellMap,
+    activeCell,
+    updateCellValue,
+    ROWS, COLS
+});
+
+
+// const handleMouseMove = (e) => {
+//     if (!selection?.start) return;
+
+//     const rect = editorRef.current.getBoundingClientRect();
+
+//     const cellWidth = rect.width / COLS;
+
+//     const col = Math.floor(
+//         (e.clientX - rect.left) / cellWidth
+//     );
+
+//     const row = Math.floor(
+//         (e.clientY - rect.top) / CELL_HEIGHT
+//     );
+
+//     setSelection(prev => ({
+//         ...prev,
+//         end: {
+//             row: Math.max(0, Math.min(ROWS - 1, row)),
+//             col: Math.max(0, Math.min(COLS - 1, col)),
+//         }
+//     }));
+// };
+
 
 const {
     // updateCell,
@@ -241,7 +283,17 @@ const { moveCellWithFocus,
 //         );
 //     }
 
+useEffect(() => {
+    const handleMouseUp = () => {
+        setDragging(false);
+    };
 
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+        window.removeEventListener("mouseup", handleMouseUp);
+    };
+}, []);
 
 
 const editorRef = useRef(null);
@@ -279,6 +331,23 @@ const pos = activeCell
                     <Cell
                         key={key}
                         cell={cell}
+                        isSelected={isSelected(row, col)}
+                        onMouseDown={() => {
+                            setDragging(true);
+                            setSelection({
+                                start: { row, col },
+                                end: { row, col }
+                            });
+                            setActiveCell({ row, col, mode: "select" });
+                        }}
+                        onMouseEnter={() => {
+                            if (!dragging) return;
+
+                            setSelection(prev => ({
+                                ...prev,
+                                end: { row, col }
+                            }));
+                        }}
                         isActive={ cell?.col === 0 && cell?.colSpan > 1 ?
                             activeCell?.row === row : ( activeCell?.row === row && activeCell?.col === col )
                         }

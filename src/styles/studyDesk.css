@@ -735,6 +735,12 @@ table {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.cell.selected {
+    background: rgba(0, 120, 255, 0.15);
+    outline: 1px solid #3399ff;
+}
+
 .floating-editor {
     position: absolute;
     /* z-index: 9999;
