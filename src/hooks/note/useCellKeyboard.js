@@ -10,6 +10,9 @@ export function useCellKeyboard({
     draftRef,
     setIsEdit,
     isEdit,
+    setSelection,
+    selection,
+    commitDraft,
 }) {
 
 // =========================
@@ -26,19 +29,87 @@ const autoEdit = useCallback((isEdit) => {
     });
 }, [setActiveCell]);
 
+const isMultiSelection = useCallback(() => {
+    if (!selection) return false;
 
+    return (
+        selection.start.row !== selection.end.row ||
+        selection.start.col !== selection.end.col
+    );
+}, [selection]);
+
+const getSelectionBounds = useCallback(() => {
+    if (!selection) return null;
+
+    return {
+        minRow: Math.min(selection.start.row, selection.end.row),
+        maxRow: Math.max(selection.start.row, selection.end.row),
+        minCol: Math.min(selection.start.col, selection.end.col),
+        maxCol: Math.max(selection.start.col, selection.end.col),
+    };
+}, [selection]);
 // =========================
 // UPDATE (CELL)
 // =========================
 
 const moveCellWithFocus = useCallback((dr, dc) => {
     moveCell(dr, dc);
+    setSelection(prev => {
+        if (!prev) return prev;
+
+        const isSingle =
+            prev.start.row === prev.end.row &&
+            prev.start.col === prev.end.col;
+
+        if (!isSingle) {
+            return prev;
+        }
+
+        return {
+            start: {
+                row: prev.start.row + dr,
+                col: prev.start.col + dc,
+            },
+            end: {
+                row: prev.end.row + dr,
+                col: prev.end.col + dc,
+            },
+        };
+    });
+    requestAnimationFrame(() => {
+        inputRef.current?.focus();
+    });
+}, [moveCell, inputRef, setSelection]);
+const moveInsideSelection = useCallback((dr, dc) => {
+    if (!selection) return;
+
+    commitDraft();
+
+    const bounds = getSelectionBounds();
+
+    setActiveCell(prev => ({
+        ...prev,
+        row: Math.max(
+            bounds.minRow,
+            Math.min(bounds.maxRow, prev.row + dr)
+        ),
+        col: Math.max(
+            bounds.minCol,
+            Math.min(bounds.maxCol, prev.col + dc)
+        ),
+        mode: "select",
+    }));
 
     requestAnimationFrame(() => {
         inputRef.current?.focus();
     });
-}, [moveCell, inputRef]);
-
+}, [
+    selection,
+    getSelectionBounds,
+    setActiveCell,
+    commitDraft,
+    inputRef,
+]);
 // 셀 이동 전용
 useEffect(() => {
     
@@ -73,14 +144,20 @@ useEffect(() => {
 
         case "Tab":
             e.preventDefault();
-            moveCell(0, e.shiftKey ? -1 : 1);
+            if (isMultiSelection())
+                { moveInsideSelection( 0, e.shiftKey ? -1 : 1);
+            } else
+                { moveCellWithFocus( 0, e.shiftKey ? -1 : 1 ); }
             autoEdit(isEdit);
             return;
 
         case "Enter":
             e.preventDefault();
             e.stopPropagation();
-            moveCell(e.shiftKey ? -1 : 1, 0);
+            if (isMultiSelection())
+                { moveInsideSelection( e.shiftKey ? -1 : 1, 0);
+            } else
+                { moveCellWithFocus( e.shiftKey ? -1 : 1,0); }
             autoEdit(isEdit);
             return;
 
@@ -98,7 +175,7 @@ useEffect(() => {
         );
     };
     }, [
-    setActiveCell, activeCell, moveCell, moveCellWithFocus, autoEdit, isEdit
+    setActiveCell, activeCell, moveCell, moveCellWithFocus, autoEdit, isEdit, isMultiSelection, moveInsideSelection
 ]);
 
 useEffect(() => {
@@ -252,8 +329,11 @@ useEffect(() => {
     cellMap,
     // draftRef
 ]);
+
   return { 
     moveCellWithFocus,
     autoEdit,
+    isMultiSelection,
+    moveInsideSelection,
    };
 }

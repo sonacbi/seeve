@@ -51,6 +51,58 @@ const isSelected = (row, col) => {
     );
 };
 
+const getSelectionBorder = (row, col) => {
+    if (!selection || !isSelected(row, col)) {
+        return {
+            borderTop: "1px solid #ddd",
+            borderRight: "1px solid #ddd",
+            borderBottom: "1px solid #ddd",
+            borderLeft: "1px solid #ddd",
+        };
+    }
+
+    const minRow = Math.min(
+        selection.start.row,
+        selection.end.row
+    );
+
+    const maxRow = Math.max(
+        selection.start.row,
+        selection.end.row
+    );
+
+    const minCol = Math.min(
+        selection.start.col,
+        selection.end.col
+    );
+
+    const maxCol = Math.max(
+        selection.start.col,
+        selection.end.col
+    );
+
+    return {
+        borderTop:
+            row === minRow
+                ? "2px solid #4f46e5"
+                : "1px solid #ddd",
+
+        borderBottom:
+            row === maxRow
+                ? "2px solid #4f46e5"
+                : "1px solid #ddd",
+
+        borderLeft:
+            col === minCol
+                ? "2px solid #4f46e5"
+                : "1px solid #ddd",
+
+        borderRight:
+            col === maxCol
+                ? "2px solid #4f46e5"
+                : "1px solid #ddd",
+    };
+};
 // =========================
 // UPDATE (CELL)
 // =========================
@@ -80,5 +132,6 @@ const enterEditMode = (row, col) => {
         selection, setSelection,
         getRange,
         isSelected,
+        getSelectionBorder,
    };
 }

@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-const Cell = memo(({ cell, isActive, onClick, isSelected, onMouseDown, onMouseEnter, onDoubleClick,}) => {
+const Cell = memo(({ cell, isActive, onClick, isSelected, borderStyle, onMouseDown, onMouseEnter, onDoubleClick, }) => {
     let content = cell?.content ?? "";
 
     switch (cell?.type) {
@@ -25,13 +25,20 @@ const Cell = memo(({ cell, isActive, onClick, isSelected, onMouseDown, onMouseEn
     }
   return (
     <div
-      className={isSelected ? "cell selected" : "cell"}
+      className={[ "cell",
+        isSelected && "selected",
+        isActive && "active",
+      ]
+        .filter(Boolean)
+        .join(" ")
+      }
       onClick={onClick}
       onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}
       onDoubleClick={onDoubleClick}
       style={{
-        border: isActive ? "2px solid #4f46e5" : "1px solid #ddd",
+        ...borderStyle,
+        // border: isActive ? "2px solid #4f46e5" : "1px solid #ddd",
         width: "100%",
         height: "100%",
         gridColumn: `span ${cell?.colSpan ?? 1}`

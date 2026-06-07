@@ -72,6 +72,7 @@ const {
     selection, setSelection,
     getRange,
     isSelected,
+    getSelectionBorder,
 } =useCellEditor({
     inputRef,
     updateCellValue,
@@ -168,9 +169,13 @@ const { moveCell } = useCellNavigation({
   ROWS,
   COLS
 });
-
+// useEffect(() => {
+//   console.log("ACTIVE", activeCell);
+// }, [activeCell]);
 const { moveCellWithFocus,
-    autoEdit
+    autoEdit,
+    isMultiSelection,
+    moveInsideSelection,
  } =useCellKeyboard({
     moveCell,
     inputRef,
@@ -181,6 +186,9 @@ const { moveCellWithFocus,
     draftRef,
     setIsEdit,
     isEdit,
+    setSelection,
+    selection,
+    commitDraft,
 });
 
     // const createFormulaCell = () =>
@@ -332,6 +340,7 @@ const pos = activeCell
                         key={key}
                         cell={cell}
                         isSelected={isSelected(row, col)}
+                        borderStyle={getSelectionBorder(row, col)}
                         onMouseDown={() => {
                             setDragging(true);
                             setSelection({
@@ -379,7 +388,10 @@ const pos = activeCell
                         if (e.key === "Tab") {
                         e.preventDefault();
                         e.stopPropagation();
-                        moveCellWithFocus(0, e.shiftKey ? -1 : 1);
+                                    if (isMultiSelection())
+                { moveInsideSelection( 0, e.shiftKey ? -1 : 1);
+            } else
+                { moveCellWithFocus( 0, e.shiftKey ? -1 : 1 ); }
                         autoEdit(isEdit);
                         return;
                         }
@@ -387,7 +399,10 @@ const pos = activeCell
                         if (e.key === "Enter") {
                         e.preventDefault();
                         e.stopPropagation();
-                        moveCellWithFocus(e.shiftKey ? -1 : 1, 0);
+                                    if (isMultiSelection())
+                { moveInsideSelection( e.shiftKey ? -1 : 1, 0);
+            } else
+                { moveCellWithFocus( e.shiftKey ? -1 : 1,0); }
                         autoEdit(isEdit);
                         return;
                         }
