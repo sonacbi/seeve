@@ -189,6 +189,7 @@ const { moveCellWithFocus,
     setSelection,
     selection,
     commitDraft,
+    updateCellValue,
 });
 
     // const createFormulaCell = () =>

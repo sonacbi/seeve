@@ -13,6 +13,7 @@ export function useCellKeyboard({
     setSelection,
     selection,
     commitDraft,
+    updateCellValue,
 }) {
 
 // =========================
@@ -109,6 +110,66 @@ const moveInsideSelection = useCallback((dr, dc) => {
     setActiveCell,
     commitDraft,
     inputRef,
+]);
+
+// 지우기 전용
+useEffect(() => {
+    const handleDelete = (e) => {
+        if (!activeCell) return;
+
+        if (e.key !== "Delete") return;
+
+        if (document.activeElement?.tagName === "TEXTAREA") {
+            return;
+        }
+
+        e.preventDefault();
+
+        // 다중선택
+        if (selection && isMultiSelection()) {
+            const bounds = getSelectionBounds();
+
+            for (
+                let row = bounds.minRow;
+                row <= bounds.maxRow;
+                row++
+            ) {
+                for (
+                    let col = bounds.minCol;
+                    col <= bounds.maxCol;
+                    col++
+                ) {
+                    updateCellValue(row, col, "");
+                }
+            }
+
+            return;
+        }
+
+        // 단일선택
+        updateCellValue(
+            activeCell.row,
+            activeCell.col,
+            ""
+        );
+    };
+
+    window.addEventListener(
+        "keydown",
+        handleDelete
+    );
+
+    return () =>
+        window.removeEventListener(
+            "keydown",
+            handleDelete
+        );
+}, [
+    activeCell,
+    selection,
+    isMultiSelection,
+    getSelectionBounds,
+    updateCellValue,
 ]);
 // 셀 이동 전용
 useEffect(() => {
