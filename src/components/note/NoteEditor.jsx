@@ -40,7 +40,7 @@ const CELL_WIDTH_PERCENT = 100 / COLS;
 // const [imageEditor, setImageEditor] = useState(null);
 // { row, col }
 
-console.log(currentNote);
+// console.log(currentNote);
 
 const {
     note,
@@ -180,7 +180,9 @@ const { moveCell } = useCellNavigation({
 //   updateCellValue,
   commitDraft,
   ROWS,
-  COLS
+  COLS,
+  CELL_HEIGHT,
+  editorRef,
 });
 // useEffect(() => {
 //   console.log("ACTIVE", activeCell);
@@ -332,6 +334,22 @@ useEffect(() => {
 
 }, [activeCell]);
 
+// dom 검사 note editor 스크롤 이동 (느림)
+// useEffect(() => {
+//     if (!activeCell) return;
+//     // console.log("trace data cell");
+//     const target = document.querySelector(
+//         `[data-row="${activeCell.row}"][data-col="${activeCell.col}"]`
+//     );
+
+//     target?.scrollIntoView({
+//         block: "nearest",
+//         inline: "nearest",
+//         behavior: "auto",
+//     });
+
+// }, [activeCell]);
+
 
 const pos = activeCell
   ? {
@@ -361,6 +379,8 @@ const pos = activeCell
                     <Cell
                         key={key}
                         cell={cell}
+                        dataRow={cell?.row ?? row}
+                        dataCol={cell?.col ?? col}
                         isSelected={isSelected(row, col)}
                         borderStyle={getSelectionBorder(row, col)}
                         onMouseDown={() => {

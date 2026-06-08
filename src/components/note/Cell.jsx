@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-const Cell = memo(({ cell, isActive, onClick, isSelected, borderStyle, onMouseDown, onMouseEnter, onDoubleClick, }) => {
+const Cell = memo(({ cell, dataRow, dataCol, isActive, onClick, isSelected, borderStyle, onMouseDown, onMouseEnter, onDoubleClick, }) => {
     let content = cell?.content ?? "";
 
     switch (cell?.type) {
@@ -51,6 +51,8 @@ const Cell = memo(({ cell, isActive, onClick, isSelected, borderStyle, onMouseDo
       onMouseDown={onMouseDown}
       onMouseEnter={onMouseEnter}
       onDoubleClick={onDoubleClick}
+      data-row={dataRow}
+      data-col={dataCol}
       style={{
         ...borderStyle,
         // border: isActive ? "2px solid #4f46e5" : "1px solid #ddd",

@@ -54,7 +54,7 @@ function useStudyDesk({
         ...updated[lecturePage],
         {
           id: `${lecturePage}-${currentCount + 1}`,
-          content: "",
+          cells: {},
         },
       ];
 
@@ -146,7 +146,7 @@ function useStudyDesk({
           page.id === currentNote.id
             ? {
                 ...page,
-                content: "",
+                cells: {},
               }
             : page
         );

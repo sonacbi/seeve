@@ -16,7 +16,7 @@ export default function ProfessorToolbar({
     currentLectureIndex,
     lectureCount,
 }) {
-console.log(lectureCount);
+// console.log(lectureCount);
     return (
         <div id="ProfessorEditNavi">
             {(showPageInfo) &&(
