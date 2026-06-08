@@ -19,9 +19,16 @@ function NoteEditor({
     isEdit,
 }) {
 const inputRef = useRef(null);
+const editorRef = useRef(null);
+
 const ROWS = 40;
 const COLS = 6;
 
+const CELL_HEIGHT = 40;
+const GRID_COLS = COLS;
+// const GRID_ROWS = ROWS;
+// const CELL_WIDTH = `calc(100% / ${GRID_COLS})`;
+const CELL_WIDTH_PERCENT = 100 / COLS;
 // =========================
 // SETTER (UI STATE)
 // =========================
@@ -79,14 +86,6 @@ const {
     cellMap,
 });
 
-const {} = useClipboard({
-    selection,
-    getRange,
-    cellMap,
-    activeCell,
-    updateCellValue,
-    ROWS, COLS
-});
 
 
 // const handleMouseMove = (e) => {
@@ -115,9 +114,11 @@ const {} = useClipboard({
 
 
 const {
-    // updateCell,
+    updateCell,
     // createCell,
     applyToSelectedCell,
+    createImageCell,
+    resetCell,
 } = useCellMutations({
     updateCellValue,
     setNotePages,
@@ -127,8 +128,20 @@ const {
     activeCell,
     cellMap,
     ROWS, COLS,
+    CELL_HEIGHT,
 });
 
+const {
+    // handleImagePaste,/
+} = useClipboard({
+    selection,
+    getRange,
+    cellMap,
+    activeCell,
+    updateCellValue,
+    ROWS, COLS,
+    createImageCell,
+});
 
 useEffect(() => {
   if (!activeCell) return;
@@ -190,6 +203,8 @@ const { moveCellWithFocus,
     selection,
     commitDraft,
     updateCellValue,
+    resetCell,
+    updateCell,
 });
 
     // const createFormulaCell = () =>
@@ -303,15 +318,21 @@ useEffect(() => {
         window.removeEventListener("mouseup", handleMouseUp);
     };
 }, []);
+useEffect(() => {
+    if (!activeCell) return;
+
+    const el = document.querySelector(
+        `[data-row="${activeCell.row}"][data-col="${activeCell.col}"]`
+    );
+
+    el?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest"
+    });
+
+}, [activeCell]);
 
 
-const editorRef = useRef(null);
-
-const CELL_HEIGHT = 40;
-const GRID_COLS = COLS;
-// const GRID_ROWS = ROWS;
-// const CELL_WIDTH = `calc(100% / ${GRID_COLS})`;
-const CELL_WIDTH_PERCENT = 100 / COLS;
 const pos = activeCell
   ? {
       top: activeCell.row * CELL_HEIGHT,

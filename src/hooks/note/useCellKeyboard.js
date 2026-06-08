@@ -14,6 +14,8 @@ export function useCellKeyboard({
     selection,
     commitDraft,
     updateCellValue,
+    resetCell,
+    updateCell,
 }) {
 
 // =========================
@@ -114,6 +116,30 @@ const moveInsideSelection = useCallback((dr, dc) => {
 
 // 지우기 전용
 useEffect(() => {
+    const resetCell = (row, col) => {
+        const cell = cellMap?.[`${row}-${col}`];
+
+        if (!cell) {
+            updateCellValue(row, col, "");
+            return;
+        }
+
+        // 특수 셀 → text 셀로 복귀
+        if (cell.type && cell.type !== "text") {
+            updateCell(cell.id, {
+                type: "text",
+                content: "",
+                imageData: null,
+                colSpan: 1,
+                rowSpan: 1,
+            });
+            return;
+        }
+
+        // 일반 텍스트 셀
+        updateCellValue(row, col, "");
+    };
+
     const handleDelete = (e) => {
         if (!activeCell) return;
 
@@ -139,7 +165,7 @@ useEffect(() => {
                     col <= bounds.maxCol;
                     col++
                 ) {
-                    updateCellValue(row, col, "");
+                    resetCell(row, col);
                 }
             }
 
@@ -147,10 +173,9 @@ useEffect(() => {
         }
 
         // 단일선택
-        updateCellValue(
+        resetCell(
             activeCell.row,
-            activeCell.col,
-            ""
+            activeCell.col
         );
     };
 
@@ -170,6 +195,8 @@ useEffect(() => {
     isMultiSelection,
     getSelectionBounds,
     updateCellValue,
+    cellMap,
+    updateCell,
 ]);
 // 셀 이동 전용
 useEffect(() => {
@@ -183,24 +210,53 @@ useEffect(() => {
         }
 
         switch (e.key) {
+        case "Escape":
+            if (isMultiSelection()) {
+                e.preventDefault();
+
+                setSelection({
+                    start: {
+                        row: activeCell.row,
+                        col: activeCell.col,
+                    },
+                    end: {
+                        row: activeCell.row,
+                        col: activeCell.col,
+                    },
+                });
+            }
+            return;
         case "ArrowRight":
             e.preventDefault();
-            moveCellWithFocus(0, 1);
+            if (isMultiSelection())
+                { moveInsideSelection(0, 1);
+            } else
+                { moveCellWithFocus(0, 1); }
             return;
 
         case "ArrowLeft":
             e.preventDefault();
-            moveCellWithFocus(0, -1);
+            if (isMultiSelection())
+                { moveInsideSelection(0, -1);
+            } else
+                { moveCellWithFocus(0, -1); }
             return;
 
         case "ArrowDown":
             e.preventDefault();
-            moveCellWithFocus(1, 0);
+            if (isMultiSelection())
+                { moveInsideSelection(1, 0);
+            } else
+                { moveCellWithFocus(1, 0); }
             return;
 
         case "ArrowUp":
             e.preventDefault();
-            moveCellWithFocus(-1, 0);
+            if (isMultiSelection())
+                { moveInsideSelection( -1, 0);
+            } else
+                { moveCellWithFocus(-1, 0); }
+            
             return;
 
         case "Tab":
@@ -297,13 +353,26 @@ useEffect(() => {
             }
 
             case "escape":
-setActiveCell(prev => {
-  console.log("ESC prev:", prev);
-  return {
-    ...prev,
-    mode: "select",
-  };
-});
+                if (isMultiSelection()) {
+                    setSelection({
+                        start: {    
+                            row: activeCell.row,
+                            col: activeCell.col,
+                        },
+                        end: {
+                            row: activeCell.row,
+                            col: activeCell.col,
+                        },
+                    });
+                }
+
+                setActiveCell(prev => {
+                console.log("ESC prev:", prev);
+                return {
+                    ...prev,
+                    mode: "select",
+                };
+                });
                 break;
 
             default:

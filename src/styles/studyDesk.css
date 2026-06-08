@@ -714,6 +714,12 @@ table {
 
     transition: all 0.15s ease;
 }
+.cell{
+    overflow-y: auto;
+    overflow-x:hidden;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
 .cell.active {
     border: 1px solid #4f46e5 !important;
     background: white !important;

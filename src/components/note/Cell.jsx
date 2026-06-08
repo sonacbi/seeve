@@ -8,9 +8,24 @@ const Cell = memo(({ cell, isActive, onClick, isSelected, borderStyle, onMouseDo
         content = "Formula 생성칸";
         break;
 
+      // case "image":
+      //   content = "Image 생성칸";
+      //   break;
       case "image":
-        content = "Image 생성칸";
-        break;
+      content = (
+          <img
+              src={cell.imageData}
+              alt=""
+              draggable={false}
+              style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  pointerEvents: "none"
+              }}
+          />
+      );
+      break;
 
       case "graph":
         content = "Graph 생성칸";
@@ -41,7 +56,9 @@ const Cell = memo(({ cell, isActive, onClick, isSelected, borderStyle, onMouseDo
         // border: isActive ? "2px solid #4f46e5" : "1px solid #ddd",
         width: "100%",
         height: "100%",
-        gridColumn: `span ${cell?.colSpan ?? 1}`
+        gridColumn: `span ${cell?.colSpan ?? 1}`,
+        gridRow: `span ${cell?.rowSpan ?? 1}`,
+        overflow: "hidden",
       }}
     >
       

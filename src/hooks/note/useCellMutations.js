@@ -9,6 +9,7 @@ setActiveCell,
 activeCell,
 cellMap,
 ROWS, COLS,
+CELL_HEIGHT,
 }) {
 // =========================
 // GETTER (READ ONLY)
@@ -139,11 +140,92 @@ const applyToSelectedCell = useCallback((type) => {
     updateCell
 ]);
 
+const createImageCell = ({
+    row,
+    imageData,
+    width,
+    height,
+}) => {
+
+    const rowSpan =
+        Math.max(
+            1,
+            Math.ceil(height / CELL_HEIGHT)
+        );
+
+    setNotePages(prev => ({
+        ...prev,
+
+        [currentNote.lecturePage]:
+            prev[currentNote.lecturePage].map(note => {
+
+                if (note.id !== currentNote.id)
+                    return note;
+
+                const nextCells = {
+                    ...note.cells
+                };
+
+                // 이미지가 차지하는 영역 삭제
+                for (
+                    let r = row;
+                    r < row + rowSpan;
+                    r++
+                ) {
+                    for (
+                        let c = 0;
+                        c < COLS;
+                        c++
+                    ) {
+                        delete nextCells[`${r}-${c}`];
+                    }
+                }
+
+                nextCells[`${row}-0`] = {
+                    id: crypto.randomUUID(),
+
+                    type: "image",
+
+                    row,
+                    col: 0,
+
+                    imageData,
+
+                    width,
+                    height,
+
+                    colSpan: COLS,
+                    rowSpan,
+                };
+
+                return {
+                    ...note,
+                    cells: nextCells
+                };
+            })
+    }));
+};
+const resetCell = useCallback((row, col) => {
+
+    const cell = cellMap[`${row}-${col}`];
+
+    if (!cell) return;
+
+    updateCell(cell.id, {
+        type: "text",
+        content: "",
+        imageData: null,
+        colSpan: 1,
+        rowSpan: 1,
+    });
+
+}, [cellMap, updateCell]);
 
   return { 
-    // updateCell,
+    updateCell,
     // createCell,
     applyToSelectedCell,
-    
+    createImageCell,
+    resetCell,
    };
 }
