@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 
 function useStudyDeskState() {
+    const [projectCreatedAt, setProjectCreatedAt]
+    = useState(null);
+
+    const [projectUpdatedAt, setProjectUpdatedAt]
+        = useState(null);
+
+    // const [currentTime, setCurrentTime]
+    //     = useState(Date.now());
 
     // 불러온 pdf 파일 -> preview와 screen에 호출할 데이터
     const [pdfFile, setPdfFile] = useState(null);
@@ -101,6 +109,15 @@ function useStudyDeskState() {
         ? parseInt(currentNote.lecturePage.replace("p", ""))
         : 1;
 
+    // 실시간으로 현재 시간 저장
+    // useEffect(() => {
+
+    //     const timer = setInterval(() => { setCurrentTime( Date.now() ); }, 1000);
+
+    //     return () => clearInterval(timer);
+
+    // }, []);
+
     return {
         pdfFile, setPdfFile,
         pdfName, setPdfName,
@@ -115,6 +132,10 @@ function useStudyDeskState() {
         currentNote,
         currentLectureNotes,
         currentLectureIndex,
+        projectCreatedAt, setProjectCreatedAt,
+        projectUpdatedAt, setProjectUpdatedAt,
+        // currentTime, setCurrentTime,
+        
     }
 }
 

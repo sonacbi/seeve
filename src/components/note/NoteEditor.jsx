@@ -40,7 +40,7 @@ const CELL_WIDTH_PERCENT = 100 / COLS;
 // const [imageEditor, setImageEditor] = useState(null);
 // { row, col }
 
-// console.log(currentNote);
+console.log(currentNote);
 
 const {
     note,

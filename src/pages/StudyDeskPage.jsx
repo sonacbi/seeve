@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import useStudyDeskState from "../hooks/useStudyDeskState"
 import ProfessorPanel from "../components/professor/ProfessorPanel";
 import NotePanel from "../components/note/NotePanel"
 import useRollback from "../hooks/useRollback";
 import FloatNavigator from "../components/FloatNavigator/FloatNavigator";
+import useProjectPersistence from "../hooks/Persistence/useProjectPersistence";
 
 import colorPalette from "../styles/color";
 
@@ -23,7 +24,74 @@ function StudyDeskPage() {
         currentNote,
         currentLectureNotes,
         currentLectureIndex,
+        projectCreatedAt, setProjectCreatedAt,
+        projectUpdatedAt, setProjectUpdatedAt,
+        // currentTime, setCurrentTime,
+
     } = useStudyDeskState();
+    const {
+        saveProject,
+        loadProject,
+    } = useProjectPersistence({
+        pdfName,
+        pdfFile,
+
+        notePages,
+        currentNoteId,
+
+        lectureCount,
+        professorOrder,
+
+        setPdfName,
+        setPdfFile,
+        setNotePages,
+        setCurrentNoteId,
+
+        setLectureCount,
+        setProfessorOrder,
+
+        projectCreatedAt, setProjectCreatedAt,
+        projectUpdatedAt, setProjectUpdatedAt,
+        // currentTime, setCurrentTime,
+    });
+
+    useEffect(() => {
+
+        const handleKeyDown =
+        async (e) => {
+
+            if (
+                (e.ctrlKey ||
+                e.metaKey) &&
+                e.key.toLowerCase() === "s"
+            ) {
+
+                e.preventDefault();
+
+                try {
+                    await saveProject();
+                }
+                catch (err) {
+                    console.error(err);
+                }
+            }
+        };
+
+        window.addEventListener(
+            "keydown",
+            handleKeyDown
+        );
+
+        return () => {
+
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+
+        };
+
+    }, [saveProject]);
 
     const rollback = useRollback();
 
@@ -63,9 +131,21 @@ function StudyDeskPage() {
                 pdfName={pdfName} setPdfName={setPdfName}
                 
                 setLectureCount={ setLectureCount }
+                lectureCount={ lectureCount }
                 setNotePages={ setNotePages }
+                notePages={ notePages }
                 setCurrentNoteId={ setCurrentNoteId }
-
+                currentNoteId={ currentNoteId }
+                setProfessorOrder = { setProfessorOrder }
+                professorOrder = { professorOrder }
+                projectCreatedAt = { projectCreatedAt }
+                setProjectCreatedAt = { setProjectCreatedAt }
+                projectUpdatedAt = { projectUpdatedAt }
+                setProjectUpdatedAt = { setProjectUpdatedAt }
+                // currentTime = { currentTime }
+                // setCurrentTime = { setCurrentTime }
+                saveProject={saveProject}
+                loadProject={loadProject}
             />
 
             <div id="flexWrap">
