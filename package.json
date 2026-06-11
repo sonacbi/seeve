@@ -2,6 +2,7 @@
   "name": "seeve",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -17,13 +18,33 @@
     "web-vitals": "^2.1.4"
   },
   "main": "main.js",
+   "build": {
+    "appId": "com.seeve.app",
+    "productName": "Seeve",
+    "files": [
+      "build/**/*",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron": "electron .",
-    "dev": "concurrently -k \"npm start\" \"wait-on http://localhost:3000 && electron .\""
+    "dev": "concurrently -k \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dist": "electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -46,6 +67,7 @@
   "devDependencies": {
     "concurrently": "^9.2.1",
     "electron": "^42.3.0",
+    "electron-builder": "^26.15.2",
     "svgo": "^4.0.1",
     "wait-on": "^9.0.10"
   }

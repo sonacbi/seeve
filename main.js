@@ -13,8 +13,15 @@ function createWindow() {
     },
   });
 
-  // React dev server 연결
-  mainWindow.loadURL("http://localhost:3000");
+  const isDev = !app.isPackaged;
+
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:3000");
+  } else {
+    mainWindow.loadFile(
+      path.join(__dirname, "build", "index.html")
+    );
+  }
 
   mainWindow.on("closed", () => {
     mainWindow = null;
