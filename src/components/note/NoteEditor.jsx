@@ -67,6 +67,16 @@ const {
 // =========================
 // UPDATE (CELL)
 // =========================
+const calcColSpan = (text, cellWidthPx) => {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  ctx.font = "14px Arial"; // 실제 셀 폰트랑 반드시 맞춰야 함
+
+  const textWidth = ctx.measureText(text).width;
+
+  return Math.max(1, Math.ceil(textWidth / cellWidthPx));
+};
 
 const { updateCellValue } = useCellUpdater(setNotePages, currentNote);
 
@@ -84,6 +94,9 @@ const {
     inputRef,
     updateCellValue,
     cellMap,
+    editorRef,
+    COLS,
+    calcColSpan,
 });
 
 

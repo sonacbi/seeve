@@ -1,5 +1,5 @@
 export function useCellUpdater(setNotePages, currentNote) {
-  const updateCellValue = (row, col, value) => {
+  const updateCellValue = (row, col, value, colSpan = 1 ) => {
     setNotePages(prev => {
       const pages = prev[currentNote.lecturePage] ?? [];
 
@@ -23,6 +23,7 @@ export function useCellUpdater(setNotePages, currentNote) {
               row,
               col,
               content: value,
+              colSpan,
             };
           }
 
